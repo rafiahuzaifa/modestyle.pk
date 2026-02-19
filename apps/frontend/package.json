@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.12.0",
+    "@clerk/nextjs": "^5.7.5",
     "@hookform/resolvers": "^4.1.0",
     "@sanity/client": "^7.3.0",
     "@sanity/image-url": "^1.1.0",
