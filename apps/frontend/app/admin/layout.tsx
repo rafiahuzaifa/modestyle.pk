@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { AdminGuard } from "./AdminGuard";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | ModestStyle.pk",
@@ -19,6 +20,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
+    <AdminGuard>
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-secondary text-white flex-shrink-0 hidden lg:flex flex-col">
@@ -81,5 +83,6 @@ export default function AdminLayout({
         <div className="p-6">{children}</div>
       </div>
     </div>
+    </AdminGuard>
   );
 }
