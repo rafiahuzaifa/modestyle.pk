@@ -9,6 +9,13 @@ DATABASE_URL = os.getenv(
     "sqlite+aiosqlite:///./modeststyle.db",  # Fallback for local dev
 )
 
+# Neon/Railway PostgreSQL URLs use "postgres://" or "postgresql://"
+# SQLAlchemy async needs "postgresql+psycopg://" (psycopg3 async driver)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+elif DATABASE_URL.startswith("postgresql://") and "+psycopg" not in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+
 engine = create_async_engine(DATABASE_URL, echo=False)
 async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
