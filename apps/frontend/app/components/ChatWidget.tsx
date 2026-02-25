@@ -32,7 +32,7 @@ export function ChatWidget() {
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://backend-sooty-two-73.vercel.app";
       const res = await fetch(`${apiUrl}/api/ai/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

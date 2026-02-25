@@ -76,7 +76,16 @@ export default async function HomePage() {
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary via-secondary/95 to-gold-900/80" />
+          <>
+            <Image
+              src="/sc6.webp"
+              alt="ModestStyle Collection"
+              fill
+              className="object-cover object-top opacity-50"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-secondary/80 via-secondary/50 to-transparent" />
+          </>
         )}
         <div className="absolute inset-0 flex items-center justify-center text-center px-4">
           <div className="max-w-2xl space-y-6 animate-fade-in">
@@ -208,8 +217,14 @@ export default async function HomePage() {
 
       {/* ── Mid Banner ──────────────────────────────────────────── */}
       <section className="relative h-[40vh] md:h-[50vh] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-secondary to-secondary/90" />
-        <div className="absolute inset-0 flex items-center justify-center text-center px-4">
+        <Image
+          src="/abaya4.jpg"
+          alt="Abaya Collection 2026"
+          fill
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-secondary/90 via-secondary/70 to-secondary/30" />
+        <div className="absolute inset-0 flex items-center justify-start px-8 md:px-20">
           <div className="max-w-xl space-y-5">
             <p className="text-gold-400 text-xs tracking-[0.3em] uppercase">
               New Season
@@ -258,6 +273,57 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ── Editorial / Lookbook ────────────────────────────────── */}
+      <section className="container mx-auto px-4 py-16 md:py-20">
+        <div className="text-center mb-12">
+          <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">Lookbook 2026</p>
+          <h2 className="font-display text-3xl md:text-4xl">Style Inspiration</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          {/* Large left */}
+          <div className="col-span-2 md:col-span-1 row-span-2 relative rounded-2xl overflow-hidden aspect-[3/4] md:aspect-auto md:h-full min-h-[300px]">
+            <Image src="/stoler1.webp" alt="Hijab Collection" fill className="object-cover hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <Link href="/products?category=hijabs" className="absolute bottom-5 left-5 text-white">
+              <p className="font-display text-xl">Hijab Collection</p>
+              <p className="text-white/70 text-xs mt-1">Shop Now →</p>
+            </Link>
+          </div>
+          {/* Top right */}
+          <div className="relative rounded-2xl overflow-hidden aspect-square">
+            <Image src="/stoller2.jpg" alt="Stoles & Dupattas" fill className="object-cover hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <Link href="/products?category=stoles" className="absolute bottom-4 left-4 text-white">
+              <p className="font-display text-base">Stoles</p>
+            </Link>
+          </div>
+          {/* Middle right */}
+          <div className="relative rounded-2xl overflow-hidden aspect-square">
+            <Image src="/stoler3.webp" alt="Cashmere Stoles" fill className="object-cover hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <Link href="/products?category=cashmere" className="absolute bottom-4 left-4 text-white">
+              <p className="font-display text-base">Cashmere</p>
+            </Link>
+          </div>
+          {/* Bottom left */}
+          <div className="relative rounded-2xl overflow-hidden aspect-square">
+            <Image src="/abaya2.jpg" alt="Classic Abayas" fill className="object-cover hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <Link href="/products?category=abayas" className="absolute bottom-4 left-4 text-white">
+              <p className="font-display text-base">Classic Abayas</p>
+            </Link>
+          </div>
+          {/* Bottom middle */}
+          <div className="relative rounded-2xl overflow-hidden aspect-square">
+            <Image src="/fancy-sequin-abayas.jpg.webp" alt="Fancy Abayas" fill className="object-cover hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <Link href="/products?category=fancy-abayas" className="absolute bottom-4 left-4 text-white">
+              <p className="font-display text-base">Fancy Abayas</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── Testimonials ────────────────────────────────────────── */}
       <section className="bg-gold-50 py-16 md:py-20">
         <div className="container mx-auto px-4 text-center">
@@ -296,13 +362,13 @@ export default async function HomePage() {
 
 // ─── Fallback data when Sanity has no content yet ────────────────────
 const FALLBACK_CATEGORIES = [
-  { _id: "1", name: "Hijabs", slug: "hijabs", image: "", description: "" },
-  { _id: "2", name: "Abayas", slug: "abayas", image: "", description: "" },
-  { _id: "3", name: "Accessories", slug: "accessories", image: "", description: "" },
-  { _id: "4", name: "Jilbabs", slug: "jilbabs", image: "", description: "" },
-  { _id: "5", name: "Prayer Wear", slug: "prayer-wear", image: "", description: "" },
-  { _id: "6", name: "Innerwear", slug: "innerwear", image: "", description: "" },
-  { _id: "7", name: "Kids Modest", slug: "kids-modest", image: "", description: "" },
+  { _id: "1", name: "Abayas", slug: "abayas", image: "/abaya2.jpg", description: "" },
+  { _id: "2", name: "Hijabs", slug: "hijabs", image: "/stoler1.webp", description: "" },
+  { _id: "3", name: "Stoles & Dupattas", slug: "stoles", image: "/stoller2.jpg", description: "" },
+  { _id: "4", name: "Fancy Abayas", slug: "fancy-abayas", image: "/fancy-sequin-abayas.jpg.webp", description: "" },
+  { _id: "5", name: "Premium Abayas", slug: "premium-abayas", image: "/abaya4.jpg", description: "" },
+  { _id: "6", name: "Cashmere Stoles", slug: "cashmere", image: "/stoler3.webp", description: "" },
+  { _id: "7", name: "Prayer Wear", slug: "prayer-wear", image: "", description: "" },
 ];
 
 const TESTIMONIALS = [

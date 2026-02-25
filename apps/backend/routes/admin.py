@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 from typing import Optional
 
@@ -20,7 +21,7 @@ class UpdateOrderStatus(BaseModel):
 async def list_orders(db: AsyncSession = Depends(get_db)):
     """List all orders for admin"""
     result = await db.execute(
-        select(Order).order_by(Order.created_at.desc()).limit(50)
+        select(Order).options(selectinload(Order.items)).order_by(Order.created_at.desc()).limit(50)
     )
     orders = result.scalars().all()
     return {
@@ -106,18 +107,18 @@ async def get_order(order_id: str, db: AsyncSession = Depends(get_db)):
 @router.get("/stats")
 async def get_stats(db: AsyncSession = Depends(get_db)):
     """Dashboard stats"""
-    total_orders = await db.scalar(select(func.count(Order.id)))
+    total_orders = await db.scalar(select(func.count(Order.id))) or 0
     total_revenue = await db.scalar(select(func.sum(Order.total))) or 0
     pending_orders = await db.scalar(
         select(func.count(Order.id)).where(Order.status == "pending")
-    )
-    total_users = await db.scalar(select(func.count(User.id)))
+    ) or 0
+    total_users = await db.scalar(select(func.count(User.id))) or 0
 
     return {
         "total_orders": total_orders,
-        "total_revenue": round(total_revenue, 2),
+        "total_revenue": round(float(total_revenue), 2),
         "pending_orders": pending_orders,
-        "total_users": total_users or 0,
+        "total_users": total_users,
     }
 
 

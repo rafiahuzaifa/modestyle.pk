@@ -5,6 +5,7 @@ import stripe
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 from typing import Optional
 
@@ -114,7 +115,7 @@ async def create_checkout(req: CheckoutRequest, db: AsyncSession = Depends(get_d
 async def get_my_orders(db: AsyncSession = Depends(get_db)):
     """Get orders for current user (simplified — no auth check for MVP)"""
     result = await db.execute(
-        select(Order).order_by(Order.created_at.desc()).limit(20)
+        select(Order).options(selectinload(Order.items)).order_by(Order.created_at.desc()).limit(20)
     )
     orders = result.scalars().all()
     return {
