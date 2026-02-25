@@ -6,6 +6,7 @@ import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 import { ChatWidget } from "@/app/components/ChatWidget";
 import { SlideoutCart } from "@/app/components/cart/slideout-cart";
+import { SocialProofToast } from "@/app/components/SocialProofToast";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -51,6 +52,7 @@ export default function RootLayout({
           <Footer />
           <SlideoutCart />
           <ChatWidget />
+          <SocialProofToast />
         </body>
       </html>
     </ClerkProvider>

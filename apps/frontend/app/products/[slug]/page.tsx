@@ -10,6 +10,8 @@ import {
 import { ProductCard } from "@/app/components/products/ProductCard";
 import { AddToCartSection } from "@/app/components/products/AddToCartSection";
 import { ImagineOnYou } from "@/app/components/products/ImagineOnYou";
+import { TrackProductView } from "@/app/components/products/TrackProductView";
+import { RecentlyViewed } from "@/app/components/products/RecentlyViewed";
 import type { Metadata } from "next";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -120,6 +122,18 @@ export default async function ProductPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {/* Track this product view for Recently Viewed */}
+      <TrackProductView
+        product={{
+          _id: product._id,
+          name: product.name,
+          slug: product.slug,
+          price: product.price,
+          compareAtPrice: product.compareAtPrice,
+          image: product.images?.[0] || "",
+          category: product.category?.name || "",
+        }}
       />
 
       <div className="min-h-screen bg-white">
@@ -267,7 +281,7 @@ export default async function ProductPage({
                   <div className="bg-gray-50 rounded-lg p-3">
                     <p className="text-gray-400 text-xs">Availability</p>
                     <p className={`font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
-                      {product.stock > 0 ? `In Stock (${product.stock})` : "Out of Stock"}
+                      {product.stock > 0 ? "✓ Available" : "✗ Out of Stock"}
                     </p>
                   </div>
                 </div>
@@ -344,6 +358,9 @@ export default async function ProductPage({
               </div>
             </section>
           )}
+
+          {/* Recently Viewed */}
+          <RecentlyViewed currentId={product._id} />
         </div>
       </div>
     </>
