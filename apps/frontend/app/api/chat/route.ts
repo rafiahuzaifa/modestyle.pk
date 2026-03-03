@@ -134,8 +134,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ reply: smartFallback(lastUserMsg) });
     }
 
-    // Build Gemini history (user/model alternating)
-    const history: Message[] = messages.slice(0, -1).map((m) => ({
+    // Build Gemini history — Gemini requires:
+    // 1. First message must be "user"
+    // 2. Roles must strictly alternate: user → model → user → model
+    // Skip the initial assistant greeting (index 0) and any leading model messages
+    const rawHistory = messages.slice(0, -1); // all except last user message
+    const userStartIdx = rawHistory.findIndex((m) => m.role === "user");
+    const trimmedHistory = userStartIdx >= 0 ? rawHistory.slice(userStartIdx) : [];
+
+    const history: Message[] = trimmedHistory.map((m) => ({
       role: m.role === "user" ? "user" : "model",
       parts: [{ text: m.content }],
     }));

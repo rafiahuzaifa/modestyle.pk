@@ -189,21 +189,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePlaceOrder = () => {
-    switch (paymentMethod) {
-      case "card":
-        return handleCardPayment();
-      case "jazzcash":
-        // handled by WalletPayment component
-        break;
-      case "easypaisa":
-        // handled by WalletPayment component
-        break;
-      case "cod":
-        return handleCOD();
-    }
-  };
-
   if (items.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
