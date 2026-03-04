@@ -1,26 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const BACKEND = "https://backend-sooty-two-73.vercel.app";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const res = await fetch(`${API_URL}/api/payment/jazzcash/create`, {
+    const res = await fetch(`${BACKEND}/api/payment/jazzcash/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     const data = await res.json();
     if (!res.ok) {
-      return NextResponse.json(
-        { error: data.detail || "JazzCash payment failed" },
-        { status: res.status }
-      );
+      const msg = data.detail || data.error || "";
+      if (msg.toLowerCase().includes("not configured")) {
+        return NextResponse.json(
+          { error: "JazzCash payment is being set up. Please use Cash on Delivery for now." },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json({ error: msg || "JazzCash payment failed" }, { status: res.status });
     }
     return NextResponse.json(data);
   } catch {
     return NextResponse.json(
-      { error: "JazzCash service unavailable. Please try again." },
+      { error: "JazzCash unavailable. Please use Cash on Delivery or WhatsApp us." },
       { status: 500 }
     );
   }
