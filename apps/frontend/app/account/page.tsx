@@ -16,8 +16,6 @@ interface Order {
   items_count: number;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://backend-sooty-two-73.vercel.app";
-
 const STATUS_COLORS: Record<string, string> = {
   pending: "text-amber-500 bg-amber-50",
   confirmed: "text-blue-500 bg-blue-50",
@@ -39,7 +37,8 @@ export default function AccountPage() {
     const fetchOrders = async () => {
       setOrdersLoading(true);
       try {
-        const res = await fetch(`${BACKEND_URL}/api/orders/mine`);
+        const email = user?.emailAddresses?.[0]?.emailAddress;
+        const res = await fetch(`/api/orders/mine?email=${encodeURIComponent(email || "")}`);
         const data = await res.json();
         setOrders(Array.isArray(data.orders) ? data.orders : []);
       } catch {

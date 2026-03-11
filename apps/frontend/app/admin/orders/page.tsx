@@ -49,12 +49,11 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/api/admin/orders`);
+      const res = await fetch("/api/admin/orders");
       const data = await res.json();
       setOrders(data.orders || []);
     } catch {
-      // Backend not available yet — show empty state
+      // DB not available
     } finally {
       setLoading(false);
     }
@@ -62,8 +61,7 @@ export default function AdminOrdersPage() {
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      await fetch(`${apiUrl}/api/admin/orders/${orderId}`, {
+      await fetch(`/api/admin/orders/${orderId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
