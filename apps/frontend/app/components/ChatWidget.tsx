@@ -7,6 +7,8 @@ interface Message {
   content: string;
 }
 
+const TICKET_URL = "https://techcorp-fte.vercel.app/support";
+
 const QUICK_REPLIES = [
   "Best hijab under PKR 2000?",
   "Show me fancy abayas",
@@ -27,6 +29,10 @@ export function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const [showQuick, setShowQuick] = useState(true);
   const messagesEnd = useRef<HTMLDivElement>(null);
+
+  const openTicket = () => {
+    window.open(TICKET_URL, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     messagesEnd.current?.scrollIntoView({ behavior: "smooth" });
@@ -184,6 +190,19 @@ export function ChatWidget() {
             )}
 
             <div ref={messagesEnd} />
+          </div>
+
+          {/* Support ticket CTA */}
+          <div className="px-4 py-2 border-t border-gray-50 bg-gray-50 flex-shrink-0">
+            <button
+              onClick={openTicket}
+              className="w-full text-[11px] text-center text-gray-500 hover:text-secondary transition flex items-center justify-center gap-1.5 py-1"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Need more help? Submit a support ticket →
+            </button>
           </div>
 
           {/* Input */}
