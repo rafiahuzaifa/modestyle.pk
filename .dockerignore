@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+.env.local
+.vercel
+.next
+__pycache__
+.pytest_cache
+.venv
+env
+*.pyc
+.DS_Store
+.Claude
+.agents

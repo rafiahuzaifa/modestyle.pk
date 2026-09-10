@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { AdminGuard } from "./AdminGuard";
+import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
+import { isAdminEmail } from "@/lib/admin";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | ModestStyle.pk",
@@ -14,13 +16,20 @@ const SIDEBAR_LINKS = [
   { name: "Content", href: "/admin/content", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
 ];
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await currentUser();
+  if (!user) redirect("/sign-in?redirect_url=/admin");
+
+  const email = user.emailAddresses.find(
+    (e) => e.id === user.primaryEmailAddressId
+  )?.emailAddress;
+  if (!isAdminEmail(email)) redirect("/");
+
   return (
-    <AdminGuard>
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-secondary text-white flex-shrink-0 hidden lg:flex flex-col">
@@ -74,15 +83,16 @@ export default function AdminLayout({
         <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h1 className="text-lg font-medium">Admin</h1>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-400">Logged in as Admin</span>
+            <span className="text-xs text-gray-400">
+              Logged in as {user.firstName || email}
+            </span>
             <div className="w-8 h-8 rounded-full bg-gold-100 flex items-center justify-center text-gold-600 text-xs font-bold">
-              A
+              {(user.firstName || email || "A")[0].toUpperCase()}
             </div>
           </div>
         </header>
         <div className="p-6">{children}</div>
       </div>
     </div>
-    </AdminGuard>
   );
 }

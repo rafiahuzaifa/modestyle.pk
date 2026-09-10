@@ -11,9 +11,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routes.orders import router as orders_router
 from routes.ai import router as ai_router
-from routes.admin import router as admin_router
 from routes.payment import router as payment_router
 from database import engine, Base
 
@@ -43,15 +41,12 @@ allowed_origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(orders_router, prefix="/api/orders", tags=["orders"])
 app.include_router(ai_router, prefix="/api/ai", tags=["ai"])
-app.include_router(admin_router, prefix="/api/admin", tags=["admin"])
 app.include_router(payment_router, prefix="/api/payment", tags=["payment"])
 
 

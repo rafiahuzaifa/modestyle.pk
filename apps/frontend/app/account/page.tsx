@@ -37,8 +37,7 @@ export default function AccountPage() {
     const fetchOrders = async () => {
       setOrdersLoading(true);
       try {
-        const email = user?.emailAddresses?.[0]?.emailAddress;
-        const res = await fetch(`/api/orders/mine?email=${encodeURIComponent(email || "")}`);
+        const res = await fetch("/api/orders/mine");
         const data = await res.json();
         setOrders(Array.isArray(data.orders) ? data.orders : []);
       } catch {

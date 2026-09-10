@@ -3,6 +3,7 @@ import { client } from "@/sanity/lib/client";
 import { PRODUCTS_QUERY, CATEGORIES_QUERY } from "@/sanity/lib/queries";
 import { ProductCard } from "@/app/components/products/ProductCard";
 import { ProductFilters } from "@/app/components/products/ProductFilters";
+import { SortSelect } from "@/app/components/products/SortSelect";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -144,15 +145,7 @@ export default async function ProductsPage({
               </p>
               <div className="flex items-center gap-2">
                 <label className="text-xs text-gray-400">Sort by:</label>
-                <select
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-gold-300"
-                  defaultValue={sort}
-                >
-                  <option value="newest">Newest</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="rating">Top Rated</option>
-                </select>
+                <SortSelect sort={sort} />
               </div>
             </div>
 

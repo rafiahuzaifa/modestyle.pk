@@ -21,12 +21,11 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/api/admin/users`);
+      const res = await fetch("/api/admin/users");
       const data = await res.json();
       setUsers(data.users || []);
     } catch {
-      // Backend not available
+      // Failed to load users
     } finally {
       setLoading(false);
     }

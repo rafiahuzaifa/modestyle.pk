@@ -14,6 +14,7 @@ import json
 import time
 from datetime import datetime
 from typing import Optional
+from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -28,6 +29,17 @@ router = APIRouter()
 
 # ─── Config ──────────────────────────────────────────────────────
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+# Sanity (read-only, for recomputing trustworthy prices server-side)
+SANITY_PROJECT_ID = os.getenv("SANITY_PROJECT_ID", "")
+SANITY_DATASET = os.getenv("SANITY_DATASET", "production")
+SANITY_API_VERSION = os.getenv("SANITY_API_VERSION", "2026-02-16")
+
+FREE_SHIPPING_THRESHOLD = 5000
+STANDARD_SHIPPING = 250
+EXPRESS_SHIPPING = 500
+PROMO_DISCOUNT_RATE = 0.1
+VALID_PROMO_CODES = {"MODEST10", "WELCOME10"}
 
 # Safepay
 SAFEPAY_API_KEY = os.getenv("SAFEPAY_API_KEY", "")
@@ -80,17 +92,66 @@ class PaymentRequest(BaseModel):
     mobile_number: Optional[str] = None  # for wallet payments
 
 
+async def fetch_product_prices(product_ids: list[str]) -> dict[str, float]:
+    """Look up authoritative product prices from Sanity's public read API."""
+    if not SANITY_PROJECT_ID or not product_ids:
+        return {}
+    query = '*[_type == "product" && _id in $ids]{_id, price}'
+    ids_json = json.dumps(product_ids)
+    url = (
+        f"https://{SANITY_PROJECT_ID}.apicdn.sanity.io/v{SANITY_API_VERSION}"
+        f"/data/query/{SANITY_DATASET}?query={quote(query)}&$ids={quote(ids_json)}"
+    )
+    async with httpx.AsyncClient() as client:
+        res = await client.get(url, timeout=15.0)
+        res.raise_for_status()
+        result = res.json().get("result", [])
+    return {p["_id"]: p["price"] for p in result}
+
+
+async def recompute_totals(req: PaymentRequest) -> tuple[float, float, float, dict[str, float]]:
+    """Recompute subtotal/discount/total from trusted server-side data.
+    Client-supplied prices and totals are never trusted directly."""
+    product_ids = list({item.product_id for item in req.items})
+    price_by_id = await fetch_product_prices(product_ids)
+
+    if not price_by_id:
+        # Sanity not configured/reachable — fall back to client prices rather
+        # than hard-failing checkout, but this should be treated as degraded.
+        price_by_id = {item.product_id: item.price for item in req.items}
+
+    missing = [item.product_id for item in req.items if item.product_id not in price_by_id]
+    if missing:
+        raise HTTPException(400, "One or more items are no longer available")
+
+    subtotal = sum(price_by_id[item.product_id] * item.quantity for item in req.items)
+
+    promo_valid = bool(req.promo_code) and req.promo_code.upper() in VALID_PROMO_CODES
+    discount = round(subtotal * PROMO_DISCOUNT_RATE) if promo_valid else 0
+
+    allowed_shipping = (
+        {0, EXPRESS_SHIPPING} if subtotal >= FREE_SHIPPING_THRESHOLD
+        else {STANDARD_SHIPPING, EXPRESS_SHIPPING}
+    )
+    shipping = req.shipping if req.shipping in allowed_shipping else min(allowed_shipping)
+
+    total = subtotal + shipping - discount
+    return subtotal, discount, total, price_by_id
+
+
 async def create_order_in_db(req: PaymentRequest, payment_method: str, db: AsyncSession) -> Order:
     """Create order + items in DB, returns the Order object (not yet committed)."""
+    subtotal, discount, total, price_by_id = await recompute_totals(req)
+
     order = Order(
         customer_name=req.customer_name or "Guest",
         customer_email=req.customer_email or "",
         customer_phone=req.customer_phone or "",
-        subtotal=req.subtotal,
+        subtotal=subtotal,
         shipping=req.shipping,
-        discount=req.discount,
-        total=req.total,
-        promo_code=req.promo_code,
+        discount=discount,
+        total=total,
+        promo_code=req.promo_code.upper() if discount else None,
         payment_method=payment_method,
         payment_status="unpaid",
         shipping_address=req.shipping_address.model_dump() if req.shipping_address else None,
@@ -103,7 +164,7 @@ async def create_order_in_db(req: PaymentRequest, payment_method: str, db: Async
             order_id=order.id,
             product_id=item.product_id,
             name=item.name,
-            price=item.price,
+            price=price_by_id[item.product_id],
             quantity=item.quantity,
             size=item.size,
             color=item.color,
@@ -130,7 +191,7 @@ async def create_safepay_payment(req: PaymentRequest, db: AsyncSession = Depends
                 f"{SAFEPAY_BASE}/order/payments/v3/",
                 json={
                     "client": SAFEPAY_API_KEY,
-                    "amount": int(req.total),  # Safepay takes integer PKR
+                    "amount": int(order.total),  # Safepay takes integer PKR
                     "currency": "PKR",
                     "environment": SAFEPAY_ENV,
                 },
@@ -199,7 +260,7 @@ async def create_jazzcash_payment(req: PaymentRequest, db: AsyncSession = Depend
 
     try:
         txn_ref = f"MS-{order.id[:8]}-{int(time.time())}"
-        amount = str(int(req.total))
+        amount = str(int(order.total))
         txn_datetime = datetime.now().strftime("%Y%m%d%H%M%S")
         expiry = datetime.now().strftime("%Y%m%d%H%M%S")  # same for immediate
 
@@ -276,7 +337,7 @@ async def create_easypaisa_payment(req: PaymentRequest, db: AsyncSession = Depen
 
     try:
         order_id = f"MS-{order.id[:8]}"
-        amount = f"{req.total:.2f}"
+        amount = f"{order.total:.2f}"
         post_back_url = f"{FRONTEND_URL}/api/payment/webhook?gateway=easypaisa"
 
         # EasyPaisa HMAC hash
@@ -384,10 +445,37 @@ async def safepay_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     return {"received": True}
 
 
+def verify_jazzcash_hash(data: dict) -> bool:
+    """Verify pp_SecureHash on an incoming JazzCash callback.
+
+    JazzCash's documented scheme: HMAC-SHA256 (key = Integrity Salt) over the
+    Integrity Salt followed by the values of every pp_* field (excluding
+    pp_SecureHash itself) with non-empty values, sorted alphabetically by key
+    and joined with "&" — the same scheme used to sign outgoing requests.
+    """
+    if not JAZZCASH_SALT:
+        return False  # can't verify without a configured salt — reject
+    received_hash = data.get("pp_SecureHash", "")
+    if not received_hash:
+        return False
+    fields = sorted(
+        k for k, v in data.items()
+        if k.startswith("pp_") and k != "pp_SecureHash" and v
+    )
+    hash_string = JAZZCASH_SALT + "".join(f"&{data[k]}" for k in fields)
+    computed = hmac.new(JAZZCASH_SALT.encode(), hash_string.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(computed.lower(), received_hash.lower())
+
+
 @router.post("/webhook/jazzcash")
 async def jazzcash_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """Handle JazzCash payment callback."""
     data = await request.form()
+    data = dict(data)
+
+    if not verify_jazzcash_hash(data):
+        raise HTTPException(401, "Invalid JazzCash callback signature")
+
     txn_ref = data.get("pp_TxnRefNo", "")
     response_code = data.get("pp_ResponseCode", "")
 
@@ -412,10 +500,36 @@ async def jazzcash_webhook(request: Request, db: AsyncSession = Depends(get_db))
     return {"received": True}
 
 
+def verify_easypaisa_hash(data: dict) -> bool:
+    """Verify the EasyPaisa callback hash.
+
+    Mirrors the HMAC-SHA256 scheme used to sign outgoing requests
+    (amount + orderId + storeId, keyed with the merchant hash key). EasyPaisa
+    is expected to echo the same hash back under `merchantHashedReq`; confirm
+    the exact field name against your EasyPaisa merchant docs if this ever
+    stops matching in production.
+    """
+    if not EASYPAISA_HASH_KEY:
+        return False  # can't verify without a configured hash key — reject
+    received_hash = data.get("merchantHashedReq", "")
+    if not received_hash:
+        return False
+    amount = data.get("amount", "")
+    order_id = data.get("orderId", "")
+    hash_data = f"{amount}{order_id}{EASYPAISA_STORE_ID}"
+    computed = hmac.new(EASYPAISA_HASH_KEY.encode(), hash_data.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(computed.lower(), received_hash.lower())
+
+
 @router.post("/webhook/easypaisa")
 async def easypaisa_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     """Handle EasyPaisa payment callback."""
     data = await request.form()
+    data = dict(data)
+
+    if not verify_easypaisa_hash(data):
+        raise HTTPException(401, "Invalid EasyPaisa callback signature")
+
     order_id = data.get("orderId", "")
     status = data.get("status", "")
 

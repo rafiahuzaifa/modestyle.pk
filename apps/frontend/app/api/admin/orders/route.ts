@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/neon";
+import { requireAdmin } from "@/lib/admin";
 
 export async function GET() {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const sql = getDb();
     const rows = await sql`
