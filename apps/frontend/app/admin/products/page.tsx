@@ -1,7 +1,6 @@
 import { client } from "@/sanity/lib/client";
 import { ADMIN_PRODUCTS } from "@/sanity/lib/queries";
 import Image from "next/image";
-import Link from "next/link";
 
 interface Product {
   _id: string;

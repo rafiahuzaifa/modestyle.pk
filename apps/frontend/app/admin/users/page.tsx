@@ -15,10 +15,6 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
   const fetchUsers = async () => {
     try {
       const res = await fetch("/api/admin/users");
@@ -30,6 +26,12 @@ export default function AdminUsersPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // State updates happen after the awaited fetch, not synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchUsers();
+  }, []);
 
   if (loading) {
     return <div className="text-center py-20 text-gray-400">Loading users...</div>;

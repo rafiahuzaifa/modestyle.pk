@@ -46,6 +46,7 @@ interface SearchParams {
   maxPrice?: string;
   sort?: string;
   filter?: string;
+  q?: string;
 }
 
 export default async function ProductsPage({
@@ -84,6 +85,15 @@ export default async function ProductsPage({
   if (params.filter === "bestseller") {
     filtered = filtered.filter((p) => p.isBestseller);
   }
+  if (params.q) {
+    const q = params.q.toLowerCase();
+    filtered = filtered.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.category?.toLowerCase().includes(q) ||
+        p.material?.toLowerCase().includes(q)
+    );
+  }
 
   const sort = params.sort || "newest";
   if (sort === "price-asc") filtered.sort((a, b) => a.price - b.price);
@@ -98,7 +108,9 @@ export default async function ProductsPage({
       <div className="relative h-[30vh] md:h-[35vh] bg-gradient-to-r from-secondary to-secondary/90 flex items-center justify-center text-center">
         <div className="space-y-3">
           <h1 className="font-display text-4xl md:text-6xl text-white">
-            {params.category
+            {params.q
+              ? `Results for "${params.q}"`
+              : params.category
               ? categories.find((c) => c.slug === params.category)?.name || "Collection"
               : "Our Collection"}
           </h1>

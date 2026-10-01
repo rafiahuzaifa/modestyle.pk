@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { useWishlistStore } from "@/sanity/lib/wishlist-store";
 import { useCartStore } from "@/sanity/lib/cart-store";
 
-interface ProductCardProps {
+export interface ProductCardProps {
   product: {
     _id: string;
     name: string;
@@ -35,7 +36,11 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <div className="group relative">
+    <motion.div
+      className="group relative"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+    >
       {/* Image */}
       <Link href={`/products/${product.slug}`}>
         <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-gray-100">
@@ -166,6 +171,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -7,12 +7,13 @@ import {
   RELATED_PRODUCTS,
   PRODUCT_REVIEWS,
 } from "@/sanity/lib/queries";
-import { ProductCard } from "@/app/components/products/ProductCard";
+import { ProductCard, type ProductCardProps } from "@/app/components/products/ProductCard";
 import { AddToCartSection } from "@/app/components/products/AddToCartSection";
 import { ImagineOnYou } from "@/app/components/products/ImagineOnYou";
 import { TrackProductView } from "@/app/components/products/TrackProductView";
 import { RecentlyViewed } from "@/app/components/products/RecentlyViewed";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface Product {
@@ -57,9 +58,13 @@ export async function generateMetadata({
   return {
     title: product.name,
     description: product.description,
+    alternates: {
+      canonical: `/products/${product.slug}`,
+    },
     openGraph: {
       title: product.name,
       description: product.description,
+      url: `${SITE_URL}/products/${product.slug}`,
       images: product.images?.[0] ? [{ url: product.images[0] }] : [],
     },
   };
@@ -117,11 +122,38 @@ export default async function ProductPage({
       : undefined,
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Products", item: `${SITE_URL}/products` },
+      ...(product.category
+        ? [{
+            "@type": "ListItem",
+            position: 3,
+            name: product.category.name,
+            item: `${SITE_URL}/products?category=${product.category.slug}`,
+          }]
+        : []),
+      {
+        "@type": "ListItem",
+        position: product.category ? 4 : 3,
+        name: product.name,
+        item: `${SITE_URL}/products/${product.slug}`,
+      },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       {/* Track this product view for Recently Viewed */}
       <TrackProductView
@@ -352,7 +384,7 @@ export default async function ProductPage({
             <section className="mt-16 pt-12 border-t border-gray-100">
               <h2 className="font-display text-2xl mb-8">You May Also Like</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {relatedProducts.map((p: any) => (
+                {relatedProducts.map((p: ProductCardProps["product"]) => (
                   <ProductCard key={p._id} product={p} />
                 ))}
               </div>

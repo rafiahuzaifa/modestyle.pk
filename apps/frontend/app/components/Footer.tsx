@@ -59,12 +59,23 @@ const SOCIAL_LINKS = [
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    setError("");
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "footer" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong");
       setSubscribed(true);
       setEmail("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     }
   };
 
@@ -83,22 +94,25 @@ const Footer = () => {
               ✓ Thank you for subscribing! We&apos;ll be in touch soon.
             </div>
           ) : (
-            <form onSubmit={handleSubscribe} className="flex max-w-md mx-auto gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Your email address"
-                required
-                className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-sm placeholder:text-white/40 focus:outline-none focus:border-gold-500"
-              />
-              <button
-                type="submit"
-                className="bg-gold-500 hover:bg-gold-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition whitespace-nowrap"
-              >
-                Subscribe
-              </button>
-            </form>
+            <>
+              <form onSubmit={handleSubscribe} className="flex max-w-md mx-auto gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Your email address"
+                  required
+                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-sm placeholder:text-white/40 focus:outline-none focus:border-gold-500"
+                />
+                <button
+                  type="submit"
+                  className="bg-gold-500 hover:bg-gold-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition whitespace-nowrap"
+                >
+                  Subscribe
+                </button>
+              </form>
+              {error && <p className="text-red-300 text-xs mt-2">{error}</p>}
+            </>
           )}
         </div>
       </div>

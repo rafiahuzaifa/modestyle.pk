@@ -90,8 +90,11 @@ export const CATEGORIES_QUERY = groq`
 // ─── Banners ─────────────────────────────────────────────────────────
 export const HERO_BANNERS = groq`
   *[_type == "banner" && isActive == true && placement == "hero"] | order(order asc) {
-    _id, title, subtitle, "image": image.asset->url,
-    link, buttonText
+    _id, title, subtitle, eyebrow, mediaType,
+    "image": image.asset->url,
+    "video": video.asset->url,
+    "videoPoster": videoPoster.asset->url,
+    link, buttonText, secondaryLink, secondaryButtonText
   }
 `;
 
@@ -123,6 +126,14 @@ export const ADMIN_PRODUCTS = groq`
 export const ADMIN_LOW_STOCK = groq`
   *[_type == "product" && stock < 10] | order(stock asc) {
     _id, name, stock, "image": images[0].asset->url
+  }
+`;
+
+export const ADMIN_BANNERS = groq`
+  *[_type == "banner" && placement == "hero"] | order(order asc) {
+    _id, title, subtitle, isActive, order, mediaType,
+    "image": image.asset->url,
+    "video": video.asset->url
   }
 `;
 

@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useCartStore } from "@/sanity/lib/cart-store";
 import { useWishlistStore } from "@/sanity/lib/wishlist-store";
@@ -18,9 +20,20 @@ const NAV_CATEGORIES = [
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const router = useRouter();
   const totalItems = useCartStore((s) => s.totalItems);
   const toggleCart = useCartStore((s) => s.toggleCart);
   const wishlistCount = useWishlistStore((s) => s.items.length);
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    router.push(`/products?q=${encodeURIComponent(query.trim())}`);
+    setSearchOpen(false);
+    setQuery("");
+  };
 
   return (
     <>
@@ -72,11 +85,44 @@ const Navbar = () => {
           {/* Right icons */}
           <div className="flex items-center gap-4">
             {/* Search */}
-            <button className="p-2 hover:text-gold-500 transition" aria-label="Search">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setSearchOpen((v) => !v)}
+                className="p-2 hover:text-gold-500 transition"
+                aria-label="Search"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              <AnimatePresence>
+                {searchOpen && (
+                  <motion.form
+                    onSubmit={submitSearch}
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.18 }}
+                    className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex items-center gap-2 w-72 z-50"
+                  >
+                    <input
+                      autoFocus
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search hijabs, abayas..."
+                      className="flex-1 text-sm px-3 py-2 focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="bg-gold-500 hover:bg-gold-600 text-white text-xs px-3 py-2 rounded-lg transition"
+                    >
+                      Go
+                    </button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Account */}
             <SignedIn>

@@ -1,2 +1,5 @@
 .vercel
 .env*.local
+
+# local secrets
+admin panel password/

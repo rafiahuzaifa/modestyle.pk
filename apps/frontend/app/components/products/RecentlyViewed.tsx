@@ -39,6 +39,8 @@ export function RecentlyViewed({ currentId }: { currentId?: string }) {
       const items: RecentProduct[] = JSON.parse(
         localStorage.getItem(STORAGE_KEY) || "[]"
       );
+      // Hydrate from localStorage after mount to avoid SSR mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProducts(items.filter((p) => p._id !== currentId));
     } catch {
       setProducts([]);

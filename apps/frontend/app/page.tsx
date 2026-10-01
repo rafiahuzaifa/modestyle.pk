@@ -8,16 +8,8 @@ import {
   NEW_ARRIVALS,
 } from "@/sanity/lib/queries";
 import { ProductCard } from "@/app/components/products/ProductCard";
-
-// ─── Types ───────────────────────────────────────────────────────────
-interface Banner {
-  _id: string;
-  title: string;
-  subtitle: string;
-  image: string;
-  link: string;
-  buttonText: string;
-}
+import { PromotionCarousel, type PromoSlide } from "@/app/components/home/PromotionCarousel";
+import { Reveal } from "@/app/components/ui/Reveal";
 interface Category {
   _id: string;
   name: string;
@@ -43,7 +35,7 @@ interface Product {
 // ─── Data fetching ───────────────────────────────────────────────────
 async function getHomeData() {
   const [banners, categories, bestsellers, newArrivals] = await Promise.all([
-    client.fetch<Banner[]>(HERO_BANNERS).catch(() => null),
+    client.fetch<PromoSlide[]>(HERO_BANNERS).catch(() => null),
     client.fetch<Category[]>(CATEGORIES_QUERY).catch(() => null),
     client.fetch<Product[]>(BESTSELLERS).catch(() => null),
     client.fetch<Product[]>(NEW_ARRIVALS).catch(() => null),
@@ -61,61 +53,10 @@ export default async function HomePage() {
   const { banners, categories, bestsellers, newArrivals } =
     await getHomeData();
 
-  const heroBanner = banners?.[0];
-
   return (
     <div>
-      {/* ── Hero Banner ─────────────────────────────────────────── */}
-      <section className="relative h-[70vh] md:h-[85vh] overflow-hidden bg-secondary">
-        {heroBanner?.image ? (
-          <Image
-            src={heroBanner.image}
-            alt={heroBanner.title || "ModestStyle"}
-            fill
-            className="object-cover opacity-60"
-            priority
-          />
-        ) : (
-          <>
-            <Image
-              src="/sc6.webp"
-              alt="ModestStyle Collection"
-              fill
-              className="object-cover object-top opacity-50"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-secondary/80 via-secondary/50 to-transparent" />
-          </>
-        )}
-        <div className="absolute inset-0 flex items-center justify-center text-center px-4">
-          <div className="max-w-2xl space-y-6 animate-fade-in">
-            <p className="text-gold-400 text-sm tracking-[0.3em] uppercase">
-              Elegance in Every Drape
-            </p>
-            <h1 className="font-display text-4xl md:text-6xl lg:text-7xl text-white leading-tight">
-              {heroBanner?.title || "Modest Fashion, Elevated"}
-            </h1>
-            <p className="text-white/70 text-base md:text-lg max-w-lg mx-auto">
-              {heroBanner?.subtitle ||
-                "Discover our curated collection of premium hijabs, abayas & modest wear crafted for the modern woman."}
-            </p>
-            <div className="flex gap-4 justify-center pt-2">
-              <Link
-                href={heroBanner?.link || "/products"}
-                className="bg-gold-500 hover:bg-gold-600 text-white px-8 py-3.5 rounded-lg text-sm font-medium tracking-wide transition"
-              >
-                {heroBanner?.buttonText || "Shop Now"}
-              </Link>
-              <Link
-                href="/products?filter=new"
-                className="border border-white/30 text-white hover:bg-white/10 px-8 py-3.5 rounded-lg text-sm font-medium tracking-wide transition"
-              >
-                New Arrivals
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Promotion Carousel (admin-managed image/video slides) ── */}
+      <PromotionCarousel slides={banners} />
 
       {/* ── Free Shipping Banner ────────────────────────────────── */}
       <section className="bg-gold-50 border-y border-gold-100">
@@ -141,14 +82,14 @@ export default async function HomePage() {
 
       {/* ── Category Grid (7 cards) ─────────────────────────────── */}
       <section className="container mx-auto px-4 py-16 md:py-20">
-        <div className="text-center mb-12">
+        <Reveal className="text-center mb-12">
           <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">
             Curated Collections
           </p>
           <h2 className="font-display text-3xl md:text-4xl">
             Shop by Category
           </h2>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {(categories.length > 0
@@ -191,14 +132,14 @@ export default async function HomePage() {
         <section className="bg-accent py-16 md:py-20">
           <div className="container mx-auto px-4">
             <div className="flex items-end justify-between mb-10">
-              <div>
+              <Reveal>
                 <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">
                   Most Loved
                 </p>
                 <h2 className="font-display text-3xl md:text-4xl">
                   Bestsellers
                 </h2>
-              </div>
+              </Reveal>
               <Link
                 href="/products?filter=bestseller"
                 className="text-sm text-gold-600 hover:text-gold-700 transition hidden md:block"
@@ -206,11 +147,11 @@ export default async function HomePage() {
                 View All &rarr;
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <Reveal delay={0.1} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {bestsellers.map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
-            </div>
+            </Reveal>
           </div>
         </section>
       )}
@@ -225,7 +166,7 @@ export default async function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-secondary/90 via-secondary/70 to-secondary/30" />
         <div className="absolute inset-0 flex items-center justify-start px-8 md:px-20">
-          <div className="max-w-xl space-y-5">
+          <Reveal className="max-w-xl space-y-5">
             <p className="text-gold-400 text-xs tracking-[0.3em] uppercase">
               New Season
             </p>
@@ -242,7 +183,7 @@ export default async function HomePage() {
             >
               Explore Abayas
             </Link>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -250,14 +191,14 @@ export default async function HomePage() {
       {newArrivals.length > 0 && (
         <section className="container mx-auto px-4 py-16 md:py-20">
           <div className="flex items-end justify-between mb-10">
-            <div>
+            <Reveal>
               <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">
                 Just Landed
               </p>
               <h2 className="font-display text-3xl md:text-4xl">
                 New Arrivals
               </h2>
-            </div>
+            </Reveal>
             <Link
               href="/products?filter=new"
               className="text-sm text-gold-600 hover:text-gold-700 transition hidden md:block"
@@ -265,20 +206,20 @@ export default async function HomePage() {
               View All &rarr;
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <Reveal delay={0.1} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {newArrivals.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}
-          </div>
+          </Reveal>
         </section>
       )}
 
       {/* ── Editorial / Lookbook ────────────────────────────────── */}
       <section className="container mx-auto px-4 py-16 md:py-20">
-        <div className="text-center mb-12">
+        <Reveal className="text-center mb-12">
           <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">Lookbook 2026</p>
           <h2 className="font-display text-3xl md:text-4xl">Style Inspiration</h2>
-        </div>
+        </Reveal>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
           {/* Large left */}
           <div className="col-span-2 md:col-span-1 row-span-2 relative rounded-2xl overflow-hidden aspect-[3/4] md:aspect-auto md:h-full min-h-[300px]">
@@ -327,16 +268,19 @@ export default async function HomePage() {
       {/* ── Testimonials ────────────────────────────────────────── */}
       <section className="bg-gold-50 py-16 md:py-20">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">
-            Loved by thousands
-          </p>
-          <h2 className="font-display text-3xl md:text-4xl mb-8">
-            What Our Customers Say
-          </h2>
+          <Reveal>
+            <p className="text-gold-500 text-xs tracking-[0.25em] uppercase mb-2">
+              Loved by thousands
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl mb-8">
+              What Our Customers Say
+            </h2>
+          </Reveal>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {TESTIMONIALS.map((t, i) => (
-              <div
+              <Reveal
                 key={i}
+                delay={i * 0.1}
                 className="bg-white rounded-xl p-6 shadow-sm border border-gold-100"
               >
                 <div className="flex gap-0.5 mb-3">
@@ -351,7 +295,7 @@ export default async function HomePage() {
                 </p>
                 <p className="text-xs font-medium text-gold-600">{t.name}</p>
                 <p className="text-xs text-gray-400">{t.city}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>

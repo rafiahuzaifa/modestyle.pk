@@ -43,10 +43,6 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
   const fetchOrders = async () => {
     try {
       const res = await fetch("/api/admin/orders");
@@ -58,6 +54,12 @@ export default function AdminOrdersPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // State updates happen after the awaited fetch, not synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchOrders();
+  }, []);
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
