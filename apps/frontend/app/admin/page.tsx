@@ -145,7 +145,7 @@ export default async function AdminDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Add Product", href: "/production", desc: "Open Sanity Studio" },
+          { label: "Add Product", href: "/admin/products/new", desc: "Photos, price, sizes & stock" },
           { label: "View Orders", href: "/admin/orders", desc: "Manage order status" },
           { label: "Manage Users", href: "/admin/users", desc: "View customers" },
           { label: "Store Front", href: "/", desc: "View your store" },
