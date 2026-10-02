@@ -11,9 +11,14 @@ export async function GET() {
     const rows = await sql`
       SELECT
         o.id, o.customer_name, o.customer_email, o.customer_phone,
-        o.total, o.status, o.payment_method, o.payment_status,
-        o.transaction_id, o.created_at,
-        COUNT(oi.id)::int AS items_count
+        o.subtotal, o.shipping, o.discount, o.total, o.promo_code,
+        o.status, o.payment_method, o.payment_status,
+        o.transaction_id, o.shipping_address, o.created_at,
+        COUNT(oi.id)::int AS items_count,
+        COALESCE(json_agg(json_build_object(
+          'name', oi.name, 'price', oi.price, 'quantity', oi.quantity,
+          'size', oi.size, 'color', oi.color
+        )) FILTER (WHERE oi.id IS NOT NULL), '[]') AS items
       FROM orders o
       LEFT JOIN order_items oi ON oi.order_id = o.id
       GROUP BY o.id

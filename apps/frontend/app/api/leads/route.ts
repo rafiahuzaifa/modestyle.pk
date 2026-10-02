@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/neon";
 import { requireAdmin } from "@/lib/admin";
+import { upsertSubscriber } from "@/lib/marketing";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -31,6 +32,9 @@ export async function POST(request: NextRequest) {
       VALUES (${email.toLowerCase().trim()}, ${source || "unknown"})
       ON CONFLICT (email) DO NOTHING
     `;
+    await upsertSubscriber({ email, source: source || "popup", whatsapp: false }).catch((err) =>
+      console.error("Subscriber upsert failed:", err)
+    );
 
     return NextResponse.json({ success: true });
   } catch (err) {

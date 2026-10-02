@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { items, customer_name, customer_email, customer_phone, shipping_address, shipping, promo_code } = body;
+    const { items, customer_name, customer_email, customer_phone, shipping_address, shipping, promo_code, checkout_id, marketing_opt_in } = body;
 
     if (!items?.length || !customer_email || !customer_name) {
       return NextResponse.json({ error: "Missing required order fields" }, { status: 400 });
@@ -36,6 +36,8 @@ export async function POST(request: NextRequest) {
       shippingAddress: shipping_address,
       shipping,
       promoCode: promo_code,
+      checkoutId: typeof checkout_id === "string" ? checkout_id : undefined,
+      marketingOptIn: marketing_opt_in === true,
       paymentMethod: "safepay",
       paymentStatus: "unpaid",
     });

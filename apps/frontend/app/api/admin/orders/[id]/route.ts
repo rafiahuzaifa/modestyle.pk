@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/neon";
 import { requireAdmin } from "@/lib/admin";
 
+const ORDER_STATUSES = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,12 +14,24 @@ export async function PATCH(
   try {
     const { id } = await params;
     const { status } = await request.json();
+    if (!ORDER_STATUSES.includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
     const sql = getDb();
-    await sql`
-      UPDATE orders SET status = ${status}, updated_at = NOW()
+    // A delivered COD order means the rider collected the cash.
+    const [order] = await sql`
+      UPDATE orders SET
+        status = ${status},
+        payment_status = CASE
+          WHEN payment_method = 'cod' AND ${status} = 'delivered' THEN 'paid'
+          ELSE payment_status
+        END,
+        updated_at = NOW()
       WHERE id = ${id}
+      RETURNING status, payment_status
     `;
-    return NextResponse.json({ success: true });
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    return NextResponse.json({ success: true, ...order });
   } catch (err) {
     console.error("Update order error:", err);
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });

@@ -41,15 +41,19 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
   },
 ];
 
+export type PaymentAvailability = Record<PaymentMethod, boolean>;
+
 interface Props {
   selected: PaymentMethod;
   onSelect: (method: PaymentMethod) => void;
+  /** Server-reported gateway configuration; unconfigured methods are hidden. */
+  availability: PaymentAvailability;
 }
 
-export function PaymentSelector({ selected, onSelect }: Props) {
+export function PaymentSelector({ selected, onSelect, availability }: Props) {
   return (
     <div className="space-y-3">
-      {PAYMENT_OPTIONS.filter((o) => o.available).map((option) => (
+      {PAYMENT_OPTIONS.filter((o) => o.available && availability[o.id]).map((option) => (
         <label
           key={option.id}
           className={`flex items-center gap-4 border rounded-lg px-4 py-4 cursor-pointer transition ${

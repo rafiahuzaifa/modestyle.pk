@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { whatsappLink } from "@/lib/site";
 
 const FAQS = [
   {
@@ -85,7 +86,7 @@ export default function FAQsPage() {
             <p className="font-medium text-secondary mb-2">Still have questions?</p>
             <p className="text-gray-500 text-sm mb-5">Our team is happy to help you</p>
             <div className="flex justify-center gap-4 flex-wrap">
-              <a href="https://wa.me/923001234567" className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition">
+              <a href={whatsappLink()} className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition">
                 WhatsApp Us
               </a>
               <a href="/contact" className="bg-secondary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-secondary/90 transition">

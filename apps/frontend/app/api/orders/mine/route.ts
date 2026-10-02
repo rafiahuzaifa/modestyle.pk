@@ -17,7 +17,7 @@ export async function GET() {
         COUNT(oi.id)::int AS items_count
       FROM orders o
       LEFT JOIN order_items oi ON oi.order_id = o.id
-      WHERE o.customer_email = ${email}
+      WHERE LOWER(o.customer_email) = LOWER(${email})
       GROUP BY o.id
       ORDER BY o.created_at DESC
       LIMIT 50

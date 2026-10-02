@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { whatsappLink } from "@/lib/site";
 
 const FOOTER_LINKS = {
   Shop: [
@@ -146,7 +147,7 @@ const Footer = () => {
             </div>
             {/* WhatsApp */}
             <a
-              href="https://wa.me/923001234567"
+              href={whatsappLink()}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 mt-4 text-xs text-green-400 hover:text-green-300 transition"

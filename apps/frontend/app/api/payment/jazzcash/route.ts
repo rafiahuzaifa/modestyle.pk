@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
-import { createOrder, OrderValidationError } from "@/lib/orders";
+import { createOrder, markOrderPaid, normalizePkPhone, OrderValidationError } from "@/lib/orders";
 import { getDb } from "@/lib/neon";
 
 const JAZZCASH_MERCHANT_ID = process.env.JAZZCASH_MERCHANT_ID || "";
@@ -14,8 +14,24 @@ function isConfigured(key: string) {
   return !!key && !key.startsWith("your_");
 }
 
+/** JazzCash timestamps are yyyyMMddHHmmss in Pakistan time (UTC+5). */
+function pktTimestamp(date: Date) {
+  return new Date(date.getTime() + 5 * 60 * 60 * 1000).toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
+}
+
+/** JazzCash secure hash: HMAC-SHA256 (key = integrity salt) over the salt followed by
+ * the values of every non-empty pp_* field, sorted alphabetically by key, joined with "&".
+ * Same scheme the webhook uses to verify callbacks. */
+function jazzCashHash(fields: Record<string, string>) {
+  const values = Object.keys(fields)
+    .filter((k) => k.startsWith("pp_") && k !== "pp_SecureHash" && fields[k] !== "")
+    .sort()
+    .map((k) => fields[k]);
+  return createHmac("sha256", JAZZCASH_SALT).update([JAZZCASH_SALT, ...values].join("&")).digest("hex").toUpperCase();
+}
+
 export async function POST(request: NextRequest) {
-  if (!isConfigured(JAZZCASH_MERCHANT_ID) || !isConfigured(JAZZCASH_PASSWORD)) {
+  if (!isConfigured(JAZZCASH_MERCHANT_ID) || !isConfigured(JAZZCASH_PASSWORD) || !isConfigured(JAZZCASH_SALT)) {
     return NextResponse.json(
       { error: "JazzCash payment is being set up. Please use Cash on Delivery for now." },
       { status: 400 }
@@ -24,13 +40,14 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { items, customer_name, customer_email, customer_phone, shipping_address, shipping, promo_code, mobile_number } = body;
+    const { items, customer_name, customer_email, customer_phone, shipping_address, shipping, promo_code, checkout_id, marketing_opt_in, mobile_number } = body;
 
     if (!items?.length || !customer_email || !customer_name) {
       return NextResponse.json({ error: "Missing required order fields" }, { status: 400 });
     }
-    if (!mobile_number || String(mobile_number).length < 11) {
-      return NextResponse.json({ error: "Valid JazzCash mobile number required (11 digits)" }, { status: 400 });
+    const walletNumber = normalizePkPhone(mobile_number);
+    if (!walletNumber) {
+      return NextResponse.json({ error: "Valid JazzCash mobile number required (e.g. 03001234567)" }, { status: 400 });
     }
 
     const { orderId, total } = await createOrder({
@@ -41,33 +58,33 @@ export async function POST(request: NextRequest) {
       shippingAddress: shipping_address,
       shipping,
       promoCode: promo_code,
+      checkoutId: typeof checkout_id === "string" ? checkout_id : undefined,
+      marketingOptIn: marketing_opt_in === true,
       paymentMethod: "jazzcash",
       paymentStatus: "unpaid",
     });
 
     const txnRef = `MS-${orderId.slice(0, 8)}-${Date.now()}`;
-    const amount = String(Math.round(total));
     const now = new Date();
-    const txnDateTime = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 14);
+    const txnDateTime = pktTimestamp(now);
+    const txnExpiry = pktTimestamp(new Date(now.getTime() + 60 * 60 * 1000));
 
-    const hashString = [JAZZCASH_SALT, amount, JAZZCASH_MERCHANT_ID, mobile_number, JAZZCASH_PASSWORD, txnDateTime, txnDateTime, txnRef, "PKR"].join("&");
-    const secureHash = createHmac("sha256", JAZZCASH_SALT).update(hashString).digest("hex");
-
-    const payload = {
+    const fields: Record<string, string> = {
       pp_Language: "EN",
       pp_MerchantID: JAZZCASH_MERCHANT_ID,
       pp_Password: JAZZCASH_PASSWORD,
       pp_TxnRefNo: txnRef,
-      pp_Amount: amount,
+      // JazzCash amounts are in paisa (PKR × 100)
+      pp_Amount: String(Math.round(total) * 100),
       pp_TxnCurrency: "PKR",
       pp_TxnDateTime: txnDateTime,
-      pp_TxnExpiryDateTime: txnDateTime,
+      pp_TxnExpiryDateTime: txnExpiry,
       pp_BillReference: `order-${orderId.slice(0, 8)}`,
       pp_Description: `ModestStyle.pk Order #${orderId.slice(0, 8)}`,
-      pp_MobileNumber: mobile_number,
+      pp_MobileNumber: walletNumber,
       pp_CNIC: "",
-      pp_SecureHash: secureHash,
     };
+    const payload = { ...fields, pp_SecureHash: jazzCashHash(fields) };
 
     const gatewayRes = await fetch(JAZZCASH_BASE, {
       method: "POST",
@@ -78,15 +95,18 @@ export async function POST(request: NextRequest) {
 
     const sql = getDb();
 
-    if (data.pp_ResponseCode === "124") {
-      await sql`
-        UPDATE orders SET transaction_id = ${data.pp_TxnRefNo || txnRef}, gateway_session_id = ${txnRef},
-          payment_status = 'pending', updated_at = NOW()
-        WHERE id = ${orderId}
-      `;
+    await sql`UPDATE orders SET gateway_session_id = ${txnRef}, updated_at = NOW() WHERE id = ${orderId}`;
+
+    // "000" = approved in-app during the call; "124"/"157" = awaiting customer approval.
+    if (data.pp_ResponseCode === "000") {
+      await markOrderPaid(orderId, data.pp_RetreivalReferenceNo || txnRef);
+      return NextResponse.json({ order_id: orderId, status: "paid", message: "Payment received." });
+    }
+    if (data.pp_ResponseCode === "124" || data.pp_ResponseCode === "157") {
+      await sql`UPDATE orders SET payment_status = 'pending', updated_at = NOW() WHERE id = ${orderId}`;
       return NextResponse.json({
         order_id: orderId,
-        status: "otp_sent",
+        status: "pending",
         message: "Payment request sent to your JazzCash app. Please approve.",
       });
     }

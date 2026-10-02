@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCartStore } from "@/sanity/lib/cart-store";
 import {
   PaymentSelector,
+  type PaymentAvailability,
   type PaymentMethod,
 } from "@/app/components/checkout/PaymentSelector";
 import { WalletPayment } from "@/app/components/checkout/WalletPayment";
@@ -23,6 +24,15 @@ interface CustomerInfo {
   postalCode: string;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/** Accepts 03xxxxxxxxx, +923xxxxxxxxx or 923xxxxxxxxx (spaces/dashes allowed). */
+function isValidPkPhone(raw: string) {
+  const digits = raw.replace(/\D/g, "");
+  const local = digits.startsWith("92") ? "0" + digits.slice(2) : digits;
+  return /^03\d{9}$/.test(local);
+}
+
 const INPUT_CLASS =
   "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold-300";
 
@@ -31,8 +41,20 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<Step>("info");
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
+  const [availability, setAvailability] = useState<PaymentAvailability>({
+    card: false,
+    jazzcash: false,
+    easypaisa: false,
+    cod: true,
+  });
   const [loading, setLoading] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(true);
+  // Stable per-checkout id so the abandoned-cart record can be closed when the order is placed.
+  const [checkoutId] = useState(() =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : ""
+  );
   const [error, setError] = useState("");
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">(
     "standard"
@@ -48,6 +70,19 @@ export default function CheckoutPage() {
     province: "",
     postalCode: "",
   });
+
+  useEffect(() => {
+    fetch("/api/payment/methods")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) setAvailability({ ...data, cod: true });
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (error) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [error]);
 
   const subtotal = totalPrice();
   const FREE_SHIPPING_THRESHOLD = 5000;
@@ -77,8 +112,35 @@ export default function CheckoutPage() {
       setError("Please fill in all required fields.");
       return false;
     }
+    if (!EMAIL_RE.test(info.email.trim())) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+    if (!isValidPkPhone(info.phone)) {
+      setError("Please enter a valid mobile number, e.g. 03001234567.");
+      return false;
+    }
     setError("");
     return true;
+  };
+
+  // Save contact + bag for cart recovery (fire-and-forget; never blocks checkout)
+  const trackCheckout = () => {
+    if (!checkoutId) return;
+    fetch("/api/checkout/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      body: JSON.stringify({
+        checkout_id: checkoutId,
+        name: `${info.firstName} ${info.lastName}`.trim(),
+        email: info.email,
+        phone: info.phone,
+        items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+        subtotal,
+        opt_in: marketingOptIn,
+      }),
+    }).catch(() => {});
   };
 
   // Build the order payload shared across all gateways
@@ -106,6 +168,8 @@ export default function CheckoutPage() {
     total,
     promo_code: promoApplied ? promoCode : undefined,
     payment_method: gateway,
+    checkout_id: checkoutId || undefined,
+    marketing_opt_in: marketingOptIn,
     ...extras,
   });
 
@@ -122,6 +186,7 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Payment failed");
       if (data.checkout_url) {
+        setRedirecting(true);
         clearCart();
         window.location.href = data.checkout_url;
       }
@@ -152,10 +217,12 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.error || "Payment failed");
 
       if (data.redirect_url) {
+        setRedirecting(true);
         clearCart();
         window.location.href = data.redirect_url;
       } else if (data.order_id) {
         // MWALLET flow: payment request sent to user's phone
+        setRedirecting(true);
         clearCart();
         window.location.href = `/checkout/success?order_id=${data.order_id}&pending=true`;
       }
@@ -179,6 +246,7 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Order creation failed");
+      setRedirecting(true);
       clearCart();
       window.location.href = `/checkout/success?order_id=${data.order_id}`;
     } catch (err: unknown) {
@@ -188,6 +256,14 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
+
+  if (redirecting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-gray-500">Confirming your order…</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -301,9 +377,24 @@ export default function CheckoutPage() {
                     className={INPUT_CLASS}
                   />
                 </div>
+                <label className="flex items-start gap-3 text-xs text-gray-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={marketingOptIn}
+                    onChange={(e) => setMarketingOptIn(e.target.checked)}
+                    className="mt-0.5 accent-gold-500"
+                  />
+                  <span>
+                    Send me order updates and exclusive offers on WhatsApp &amp; email. You can
+                    unsubscribe anytime.
+                  </span>
+                </label>
                 <button
                   onClick={() => {
-                    if (validateInfo()) setStep("shipping");
+                    if (validateInfo()) {
+                      trackCheckout();
+                      setStep("shipping");
+                    }
                   }}
                   className="w-full bg-secondary text-white py-3.5 rounded-lg font-medium hover:bg-secondary/90 transition"
                 >
@@ -397,6 +488,7 @@ export default function CheckoutPage() {
                 <PaymentSelector
                   selected={paymentMethod}
                   onSelect={setPaymentMethod}
+                  availability={availability}
                 />
 
                 {/* Card: Safepay hosted checkout */}
