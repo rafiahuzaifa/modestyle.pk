@@ -9,6 +9,9 @@ import { SlideoutCart } from "@/app/components/cart/slideout-cart";
 import { SocialProofToast } from "@/app/components/SocialProofToast";
 import { DiscountPopup } from "@/app/components/DiscountPopup";
 import { SITE_URL } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
+import { toPublicSettings } from "@/lib/settings-shared";
+import { SettingsProvider } from "@/app/components/SettingsProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -61,11 +64,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = toPublicSettings(await getSettings());
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -75,11 +79,7 @@ export default function RootLayout({
         name: "ModestStyle.pk",
         url: SITE_URL,
         logo: `${SITE_URL}/sc6.webp`,
-        sameAs: [
-          "https://instagram.com/modestyle.pk",
-          "https://facebook.com/modestyle.pk",
-          "https://tiktok.com/@modestyle.pk",
-        ],
+        sameAs: [settings.instagram, settings.facebook, settings.tiktok].filter(Boolean),
       },
       {
         "@type": "WebSite",
@@ -104,13 +104,15 @@ export default function RootLayout({
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
           />
-          <Navbar />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <SlideoutCart />
-          <ChatWidget />
-          <SocialProofToast />
-          <DiscountPopup />
+          <SettingsProvider settings={settings}>
+            <Navbar />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <SlideoutCart />
+            <ChatWidget />
+            <SocialProofToast />
+            <DiscountPopup />
+          </SettingsProvider>
         </body>
       </html>
     </ClerkProvider>

@@ -1,7 +1,9 @@
 import { ContactForm } from "./ContactForm";
-import { SUPPORT_EMAIL, WHATSAPP_DISPLAY } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
+import { formatWhatsApp } from "@/lib/settings-shared";
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSettings();
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
@@ -31,13 +33,13 @@ export default function ContactPage() {
             {[
               {
                 title: "WhatsApp",
-                detail: WHATSAPP_DISPLAY,
+                detail: formatWhatsApp(settings.whatsappNumber),
                 sub: "Mon–Sat, 9am–7pm PKT",
                 icon: "📱",
               },
               {
                 title: "Email",
-                detail: SUPPORT_EMAIL,
+                detail: settings.supportEmail,
                 sub: "Response within 24 hours",
                 icon: "✉️",
               },

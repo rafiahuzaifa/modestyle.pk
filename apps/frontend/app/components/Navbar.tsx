@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useCartStore } from "@/sanity/lib/cart-store";
 import { useWishlistStore } from "@/sanity/lib/wishlist-store";
+import { useSettings } from "@/app/components/SettingsProvider";
 
 const NAV_CATEGORIES = [
   { name: "Hijabs", href: "/products?category=hijabs" },
@@ -19,6 +20,7 @@ const NAV_CATEGORIES = [
 ];
 
 const Navbar = () => {
+  const { announcement } = useSettings();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -37,10 +39,12 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Announcement Bar */}
-      <div className="bg-secondary text-white text-center text-xs py-2 tracking-wider">
-        FREE SHIPPING ON ORDERS OVER PKR 5,000 &nbsp;|&nbsp; EASY RETURNS
-      </div>
+      {/* Announcement Bar (edited in Admin → Settings; hidden when empty) */}
+      {announcement && (
+        <div className="bg-secondary text-white text-center text-xs py-2 px-4 tracking-wider whitespace-pre-wrap">
+          {announcement}
+        </div>
+      )}
 
       <nav className="bg-white border-b border-gold-100 sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between py-4 px-4 lg:px-8">

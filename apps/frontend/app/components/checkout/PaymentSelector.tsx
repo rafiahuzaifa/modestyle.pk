@@ -1,5 +1,7 @@
 "use client";
 
+import { useSettings } from "@/app/components/SettingsProvider";
+
 export type PaymentMethod = "card" | "jazzcash" | "easypaisa" | "cod";
 
 interface PaymentOption {
@@ -35,7 +37,7 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
   {
     id: "cod",
     name: "Cash on Delivery",
-    description: "Pay when your order arrives — PKR 200 COD fee",
+    description: "Pay when your order arrives",
     icon: "🏠",
     available: true,
   },
@@ -51,6 +53,7 @@ interface Props {
 }
 
 export function PaymentSelector({ selected, onSelect, availability }: Props) {
+  const { codFee } = useSettings();
   return (
     <div className="space-y-3">
       {PAYMENT_OPTIONS.filter((o) => o.available && availability[o.id]).map((option) => (
@@ -73,7 +76,10 @@ export function PaymentSelector({ selected, onSelect, availability }: Props) {
           <span className="text-xl">{option.icon}</span>
           <div className="flex-1">
             <p className="text-sm font-medium">{option.name}</p>
-            <p className="text-xs text-gray-500">{option.description}</p>
+            <p className="text-xs text-gray-500">
+              {option.description}
+              {option.id === "cod" && codFee > 0 && ` — PKR ${codFee.toLocaleString()} COD fee`}
+            </p>
           </div>
           {option.id === "card" && (
             <div className="flex gap-1">

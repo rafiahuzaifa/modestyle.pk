@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { whatsappLink } from "@/lib/site";
+import { useSettings } from "@/app/components/SettingsProvider";
+import { whatsappHref } from "@/lib/settings-shared";
 
 const INPUT_CLASS =
   "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold-300";
@@ -9,6 +10,7 @@ const LABEL_CLASS = "block text-xs font-medium text-gray-500 mb-1.5 uppercase tr
 
 /** Sends the enquiry to the store's WhatsApp — no backend or mail setup required. */
 export function ContactForm() {
+  const { whatsappNumber } = useSettings();
   const [error, setError] = useState("");
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -29,7 +31,7 @@ export function ContactForm() {
       get("phone") && `Phone: ${get("phone")}`,
     ].filter(Boolean);
     const text = `${details.join("\n")}\n\n${message}`;
-    window.open(whatsappLink(text), "_blank", "noopener,noreferrer");
+    window.open(whatsappHref(whatsappNumber, text), "_blank", "noopener,noreferrer");
   };
 
   return (

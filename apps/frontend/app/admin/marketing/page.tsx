@@ -76,7 +76,7 @@ export default function AdminMarketingPage() {
         <h2 className="text-2xl font-display">Marketing</h2>
         <p className="text-sm text-gray-500 mt-1">
           Send sale offers to customers who opted in. Shoppers who leave checkout without ordering
-          automatically get one reminder with code <span className="font-mono">WELCOME10</span>.
+          automatically get one reminder with the abandoned-cart code chosen in Settings.
         </p>
       </div>
 

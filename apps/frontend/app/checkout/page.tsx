@@ -10,6 +10,7 @@ import {
   type PaymentMethod,
 } from "@/app/components/checkout/PaymentSelector";
 import { WalletPayment } from "@/app/components/checkout/WalletPayment";
+import { useSettings } from "@/app/components/SettingsProvider";
 
 type Step = "info" | "shipping" | "payment";
 
@@ -40,7 +41,11 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCartStore();
   const [step, setStep] = useState<Step>("info");
   const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
+  // Discount % of the applied promo code (0 = none), as confirmed by the server.
+  const [promoPercent, setPromoPercent] = useState(0);
+  const [checkingPromo, setCheckingPromo] = useState(false);
+  const promoApplied = promoPercent > 0;
+  const settings = useSettings();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [availability, setAvailability] = useState<PaymentAvailability>({
     card: false,
@@ -85,15 +90,37 @@ export default function CheckoutPage() {
   }, [error]);
 
   const subtotal = totalPrice();
-  const FREE_SHIPPING_THRESHOLD = 5000;
-  const COD_FEE = 200;
+  // Same rules the server applies in lib/orders.ts, from Admin → Settings.
+  const FREE_SHIPPING_THRESHOLD = settings.freeShippingThreshold;
+  const COD_FEE = settings.codFee;
   const shippingCost =
     shippingMethod === "express"
-      ? 500
+      ? settings.expressShipping
       : subtotal >= FREE_SHIPPING_THRESHOLD
       ? 0
-      : 250;
-  const discount = promoApplied ? Math.round(subtotal * 0.1) : 0;
+      : settings.standardShipping;
+  const discount = promoApplied ? Math.round((subtotal * promoPercent) / 100) : 0;
+
+  const applyPromo = async () => {
+    const code = promoCode.trim();
+    if (!code) return;
+    setCheckingPromo(true);
+    try {
+      const res = await fetch("/api/promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) throw new Error();
+      setPromoPercent(data.percent);
+      setError("");
+    } catch {
+      setError("Invalid promo code");
+    } finally {
+      setCheckingPromo(false);
+    }
+  };
   const codFee = paymentMethod === "cod" ? COD_FEE : 0;
   const total = subtotal + shippingCost - discount + codFee;
 
@@ -433,7 +460,7 @@ export default function CheckoutPage() {
                     <span className="text-sm font-medium">
                       {subtotal >= FREE_SHIPPING_THRESHOLD
                         ? "FREE"
-                        : "PKR 250"}
+                        : `PKR ${settings.standardShipping.toLocaleString()}`}
                     </span>
                   </label>
 
@@ -459,7 +486,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-sm font-medium">PKR 500</span>
+                    <span className="text-sm font-medium">PKR {settings.expressShipping.toLocaleString()}</span>
                   </label>
                 </div>
 
@@ -664,18 +691,11 @@ export default function CheckoutPage() {
                   className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold-300"
                 />
                 <button
-                  onClick={() => {
-                    if (promoCode === "MODEST10" || promoCode === "WELCOME10") {
-                      setPromoApplied(true);
-                      setError("");
-                    } else if (promoCode) {
-                      setError("Invalid promo code");
-                    }
-                  }}
-                  disabled={promoApplied}
+                  onClick={applyPromo}
+                  disabled={promoApplied || checkingPromo}
                   className="px-4 py-2 bg-secondary text-white text-sm rounded-lg hover:bg-secondary/90 transition disabled:opacity-50"
                 >
-                  {promoApplied ? "Applied" : "Apply"}
+                  {promoApplied ? "Applied" : checkingPromo ? "Checking…" : "Apply"}
                 </button>
               </div>
 
@@ -697,7 +717,7 @@ export default function CheckoutPage() {
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
-                    <span>Promo Discount (10%)</span>
+                    <span>Promo Discount ({promoPercent}%)</span>
                     <span>-PKR {discount.toLocaleString()}</span>
                   </div>
                 )}

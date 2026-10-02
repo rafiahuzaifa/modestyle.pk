@@ -14,6 +14,8 @@ import { TrackProductView } from "@/app/components/products/TrackProductView";
 import { RecentlyViewed } from "@/app/components/products/RecentlyViewed";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
+import { formatPkr } from "@/lib/settings-shared";
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface Product {
@@ -81,7 +83,7 @@ export default async function ProductPage({
 
   if (!product) notFound();
 
-  const [relatedProducts, reviews] = await Promise.all([
+  const [relatedProducts, reviews, settings] = await Promise.all([
     product.category?._id
       ? client.fetch(RELATED_PRODUCTS, {
           categoryId: product.category._id,
@@ -89,6 +91,7 @@ export default async function ProductPage({
         })
       : [],
     client.fetch<Review[]>(PRODUCT_REVIEWS, { productId: product._id }),
+    getSettings(),
   ]);
 
   const discount = product.compareAtPrice
@@ -330,7 +333,7 @@ export default async function ProductPage({
                     <svg className="w-5 h-5 text-gold-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" />
                     </svg>
-                    Free shipping on orders over PKR 5,000
+                    Free shipping on orders over {formatPkr(settings.freeShippingThreshold)}
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-500">
                     <svg className="w-5 h-5 text-gold-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

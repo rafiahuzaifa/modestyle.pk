@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getSettings } from "@/lib/settings";
+import { formatPkr } from "@/lib/settings-shared";
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import {
@@ -50,8 +52,8 @@ async function getHomeData() {
 
 // ─── Page ────────────────────────────────────────────────────────────
 export default async function HomePage() {
-  const { banners, categories, bestsellers, newArrivals } =
-    await getHomeData();
+  const [{ banners, categories, bestsellers, newArrivals }, settings] =
+    await Promise.all([getHomeData(), getSettings()]);
 
   return (
     <div>
@@ -63,7 +65,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-4 py-4 flex flex-wrap justify-center gap-8 text-xs tracking-wide text-secondary/70">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-gold-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8" /></svg>
-            FREE SHIPPING OVER PKR 5,000
+            FREE SHIPPING OVER {formatPkr(settings.freeShippingThreshold)}
           </div>
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-gold-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>

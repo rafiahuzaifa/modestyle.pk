@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getOrderSummary, type OrderSummary } from "@/lib/orders";
-import { whatsappLink } from "@/lib/site";
+import { getSettings } from "@/lib/settings";
+import { whatsappHref } from "@/lib/settings-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,10 @@ export default async function CheckoutSuccessPage({
 }) {
   const params = await searchParams;
   const orderId = params.order_id || "";
-  const order = orderId ? await getOrderSummary(orderId).catch(() => null) : null;
+  const [order, settings] = await Promise.all([
+    orderId ? getOrderSummary(orderId).catch(() => null) : null,
+    getSettings(),
+  ]);
   const state = stateFor(order, params.pending === "true");
   const copy = COPY[state];
   const ref = (order?.id || orderId).slice(0, 8).toUpperCase();
@@ -111,7 +115,7 @@ export default async function CheckoutSuccessPage({
             {state === "failed" ? "Shop Again" : "Continue Shopping"}
           </Link>
           <a
-            href={whatsappLink(ref ? `Assalam o Alaikum! My order number is #${ref}.` : undefined)}
+            href={whatsappHref(settings.whatsappNumber, ref ? `Assalam o Alaikum! My order number is #${ref}.` : undefined)}
             target="_blank"
             rel="noopener noreferrer"
             className="border border-gray-200 px-6 py-3 rounded-lg text-sm font-medium hover:border-gold-400 transition"

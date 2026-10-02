@@ -2,9 +2,8 @@ import { claimAbandonedCheckouts, getAudience, getUnsubscribeToken } from "@/lib
 import { isEmailConfigured, sendEmail } from "@/lib/notify";
 import { isWhatsAppConfigured, sendTemplate, TEMPLATES } from "@/lib/whatsapp";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-
-/** Promo code offered in cart-recovery messages; must be one of the codes lib/orders accepts. */
-export const CART_RECOVERY_CODE = process.env.CART_RECOVERY_CODE || "WELCOME10";
+import { findPromo, getSettings } from "@/lib/settings";
+import { formatPkr } from "@/lib/settings-shared";
 
 const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const firstName = (name: string | null) => (name || "").trim().split(/\s+/)[0] || "there";
@@ -52,13 +51,24 @@ function offerEmailHtml(opts: {
 export async function sendCartReminders() {
   // Idle ≥ 1h, at most 3 days old.
   const carts = await claimAbandonedCheckouts(60, 72);
+  if (!carts.length) return { checked: 0, whatsapp: 0, email: 0 };
+
+  // Offer the admin-chosen recovery code only if it's still an active promo code.
+  const settings = await getSettings();
+  const promo = await findPromo(settings.cartRecoveryCode);
+  const code = promo?.code || "";
+  const offer = promo
+    ? `Complete your order today and enjoy ${promo.percent}% off with the code below`
+    : "Complete your order today";
+  const shippingNote = `free delivery on orders over ${formatPkr(settings.freeShippingThreshold)}`;
+
   let whatsapp = 0;
   let email = 0;
 
   for (const cart of carts) {
     try {
       if (cart.phone && isWhatsAppConfigured()) {
-        const r = await sendTemplate(cart.phone, TEMPLATES.cartReminder, [firstName(cart.name), CART_RECOVERY_CODE], [
+        const r = await sendTemplate(cart.phone, TEMPLATES.cartReminder, [firstName(cart.name), code || "your bag"], [
           { type: "url", index: 0, text: "checkout" },
         ]);
         if (r.ok) whatsapp++;
@@ -72,8 +82,8 @@ export async function sendCartReminders() {
           offerEmailHtml({
             name: cart.name,
             headline: "Your bag is waiting for you",
-            message: `We saved the items in your bag. Complete your order today and enjoy 10% off with the code below — plus free delivery on orders over PKR 5,000.`,
-            code: CART_RECOVERY_CODE,
+            message: `We saved the items in your bag. ${offer} — plus ${shippingNote}.`,
+            code: code || undefined,
             ctaUrl: `${SITE_URL}/checkout`,
             ctaText: "Complete My Order",
             unsubscribe,

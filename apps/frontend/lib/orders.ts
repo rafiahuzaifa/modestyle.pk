@@ -3,14 +3,9 @@ import { getDb } from "@/lib/neon";
 import { randomUUID } from "crypto";
 import { notifyNewOrder } from "@/lib/notify";
 import { markCheckoutRecovered, upsertSubscriber } from "@/lib/marketing";
+import { findPromo, getSettings } from "@/lib/settings";
 
-export const FREE_SHIPPING_THRESHOLD = 5000;
-export const STANDARD_SHIPPING = 250;
-export const EXPRESS_SHIPPING = 500;
-export const COD_FEE = 200;
 const MAX_QTY_PER_ITEM = 20;
-const VALID_PROMO_CODES = new Set(["MODEST10", "WELCOME10"]);
-const PROMO_DISCOUNT_RATE = 0.1;
 
 export interface OrderItemInput {
   product_id: string;
@@ -74,15 +69,18 @@ export async function recomputeOrderTotals(
     0
   );
 
-  const promoApplied = typeof promoCode === "string" && VALID_PROMO_CODES.has(promoCode.toUpperCase());
-  const discount = promoApplied ? Math.round(subtotal * PROMO_DISCOUNT_RATE) : 0;
+  // Shipping, COD fee and promo codes come from the admin-managed store settings.
+  const settings = await getSettings();
+  const promo = await findPromo(promoCode);
+  const promoApplied = !!promo;
+  const discount = promo ? Math.round((subtotal * promo.percent) / 100) : 0;
 
-  const allowedShipping = subtotal >= FREE_SHIPPING_THRESHOLD
-    ? [0, EXPRESS_SHIPPING]
-    : [STANDARD_SHIPPING, EXPRESS_SHIPPING];
+  const allowedShipping = subtotal >= settings.freeShippingThreshold
+    ? [0, settings.expressShipping]
+    : [settings.standardShipping, settings.expressShipping];
   const shippingCost = allowedShipping.includes(shipping) ? shipping : allowedShipping[0];
 
-  const codFee = paymentMethod === "cod" ? COD_FEE : 0;
+  const codFee = paymentMethod === "cod" ? settings.codFee : 0;
   const total = subtotal + shippingCost - discount + codFee;
 
   return { subtotal, discount, codFee, total, shippingCost, priceById, promoApplied };
@@ -137,7 +135,7 @@ export async function createOrder(params: CreateOrderParams) {
     ) VALUES (
       ${orderId}, ${params.customerName.trim()}, ${params.customerEmail.trim().toLowerCase()}, ${phone},
       ${params.status || "processing"}, ${subtotal}, ${shippingCost}, ${discount}, ${total},
-      ${promoApplied ? params.promoCode!.toUpperCase() : null}, ${params.paymentMethod}, ${params.paymentStatus},
+      ${promoApplied ? params.promoCode!.trim().toUpperCase() : null}, ${params.paymentMethod}, ${params.paymentStatus},
       ${JSON.stringify(params.shippingAddress || {})}, ${now}, ${now}
     )
   `;

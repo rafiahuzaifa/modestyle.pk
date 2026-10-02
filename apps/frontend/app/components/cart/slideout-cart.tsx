@@ -4,14 +4,15 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCartStore, CartItem } from "@/sanity/lib/cart-store";
+import { useSettings } from "@/app/components/SettingsProvider";
 
 export function SlideoutCart() {
   const { items, isOpen, setOpen, removeItem, updateQuantity, totalPrice } =
     useCartStore();
+  const { freeShippingThreshold: FREE_SHIPPING_THRESHOLD } = useSettings();
 
   if (!isOpen) return null;
 
-  const FREE_SHIPPING_THRESHOLD = 5000;
   const total = totalPrice();
   const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
 

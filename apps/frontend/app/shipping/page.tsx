@@ -1,4 +1,8 @@
-export default function ShippingPage() {
+import { getSettings } from "@/lib/settings";
+import { formatPkr } from "@/lib/settings-shared";
+
+export default async function ShippingPage() {
+  const s = await getSettings();
   return (
     <main className="min-h-screen bg-white">
       <section className="bg-secondary text-white py-20 text-center">
@@ -40,11 +44,11 @@ export default function ShippingPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   <tr>
-                    <td className="px-6 py-4 text-gray-700">Under PKR 5,000</td>
-                    <td className="px-6 py-4 text-gray-700">PKR 200</td>
+                    <td className="px-6 py-4 text-gray-700">Under {formatPkr(s.freeShippingThreshold)}</td>
+                    <td className="px-6 py-4 text-gray-700">{formatPkr(s.standardShipping)}</td>
                   </tr>
                   <tr className="bg-green-50">
-                    <td className="px-6 py-4 text-green-700 font-medium">PKR 5,000 &amp; above</td>
+                    <td className="px-6 py-4 text-green-700 font-medium">{formatPkr(s.freeShippingThreshold)} &amp; above</td>
                     <td className="px-6 py-4 text-green-700 font-semibold">FREE 🎉</td>
                   </tr>
                 </tbody>

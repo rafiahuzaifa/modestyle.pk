@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/neon";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { adminEmails } from "@/lib/admin";
 import { isWhatsAppConfigured, sendTemplate, TEMPLATES } from "@/lib/whatsapp";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
@@ -12,7 +13,8 @@ export function isEmailConfigured() {
 }
 
 function adminRecipients(): string[] {
-  return (process.env.ORDER_NOTIFY_EMAILS || process.env.ADMIN_EMAILS || "")
+  if (!process.env.ORDER_NOTIFY_EMAILS) return adminEmails();
+  return process.env.ORDER_NOTIFY_EMAILS
     .split(",")
     .map((e) => e.trim())
     .filter(Boolean);

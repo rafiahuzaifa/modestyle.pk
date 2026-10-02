@@ -1,4 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSettings } from "@/lib/settings";
+import { formatPkr, formatWhatsApp, type StoreSettings } from "@/lib/settings-shared";
+
+/** The copy below is written with placeholder contact/shipping values; swap in the live
+ * Admin → Settings values so the assistant never quotes stale numbers. */
+function withSettings(text: string, s: StoreSettings) {
+  return text
+    .replaceAll("+92 300 1234567", formatWhatsApp(s.whatsappNumber))
+    .replaceAll("support@modestyle.pk", s.supportEmail)
+    .replaceAll("PKR 200 fee", `${formatPkr(s.standardShipping)} fee`)
+    .replaceAll("PKR 5,000", formatPkr(s.freeShippingThreshold));
+}
 
 const SYSTEM_INSTRUCTION = `You are the AI shopping assistant for ModestStyle.pk — Pakistan's premium modest fashion store.
 
@@ -64,10 +76,12 @@ export async function POST(req: NextRequest) {
     const lastUserMsg =
       [...messages].reverse().find((m) => m.role === "user")?.content || "";
 
+    const settings = await getSettings();
+    const fallback = () => withSettings(smartFallback(lastUserMsg), settings);
     const geminiKey = process.env.GEMINI_API_KEY;
 
     if (!geminiKey) {
-      return NextResponse.json({ reply: smartFallback(lastUserMsg) });
+      return NextResponse.json({ reply: fallback() });
     }
 
     // Build Gemini history (must start with user, strictly alternating)
@@ -81,7 +95,7 @@ export async function POST(req: NextRequest) {
     }));
 
     const body = {
-      system_instruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+      system_instruction: { parts: [{ text: withSettings(SYSTEM_INSTRUCTION, settings) }] },
       contents: [
         ...history,
         { role: "user", parts: [{ text: lastUserMsg }] },
@@ -103,18 +117,18 @@ export async function POST(req: NextRequest) {
     );
 
     if (!res.ok) {
-      return NextResponse.json({ reply: smartFallback(lastUserMsg) });
+      return NextResponse.json({ reply: fallback() });
     }
 
     const data = await res.json();
     const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      smartFallback(lastUserMsg);
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || fallback();
 
     return NextResponse.json({ reply });
   } catch {
+    const s = await getSettings();
     return NextResponse.json({
-      reply: "Sorry, something went wrong. Please WhatsApp us at +92 300 1234567",
+      reply: `Sorry, something went wrong. Please WhatsApp us at ${formatWhatsApp(s.whatsappNumber)}`,
     });
   }
 }

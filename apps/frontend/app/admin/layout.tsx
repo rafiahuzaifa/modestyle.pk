@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
-import { isAdminEmail } from "@/lib/admin";
+import { adminEmails, isAdminEmail, verifiedPrimaryEmail } from "@/lib/admin";
 import { SignOutButton } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
@@ -16,6 +16,7 @@ const SIDEBAR_LINKS = [
   { name: "Users", href: "/admin/users", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" },
   { name: "Content", href: "/admin/content", icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" },
   { name: "Marketing", href: "/admin/marketing", icon: "M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" },
+  { name: "Settings", href: "/admin/settings", icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" },
   { name: "Leads", href: "/admin/leads", icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
 ];
 
@@ -27,9 +28,7 @@ export default async function AdminLayout({
   const user = await currentUser();
   if (!user) redirect("/sign-in?redirect_url=/admin");
 
-  const email = user.emailAddresses.find(
-    (e) => e.id === user.primaryEmailAddressId
-  )?.emailAddress;
+  const email = verifiedPrimaryEmail(user);
   if (!isAdminEmail(email)) return <AccessDenied email={email} />;
 
   return (
@@ -116,7 +115,7 @@ export default async function AdminLayout({
 
 /** Shown instead of a silent redirect so it's clear why the panel won't open. */
 function AccessDenied({ email }: { email?: string }) {
-  const configured = (process.env.ADMIN_EMAILS || "").split(",").some((e) => e.trim());
+  const configured = adminEmails().length > 0;
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white rounded-xl border border-gray-100 p-8 max-w-md text-center space-y-4">

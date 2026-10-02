@@ -1,20 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSettings } from "@/app/components/SettingsProvider";
 import { AnimatePresence, motion } from "framer-motion";
 
 const STORAGE_KEY = "ms_discount_popup_dismissed_at";
 const SNOOZE_DAYS = 7;
 const SHOW_AFTER_MS = 5000;
-const PROMO_CODE = "WELCOME10";
 
 export function DiscountPopup() {
+  const { popupPromoCode: PROMO_CODE, popupPromoPercent } = useSettings();
   const [visible, setVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
 
   useEffect(() => {
+    // No active popup code configured in Admin → Settings: don't show the offer.
+    if (!popupPromoPercent || !PROMO_CODE) return;
     try {
       const dismissedAt = localStorage.getItem(STORAGE_KEY);
       if (dismissedAt) {
@@ -27,7 +30,7 @@ export function DiscountPopup() {
 
     const timer = setTimeout(() => setVisible(true), SHOW_AFTER_MS);
     return () => clearTimeout(timer);
-  }, []);
+  }, [popupPromoPercent, PROMO_CODE]);
 
   const dismiss = () => {
     setVisible(false);
@@ -94,7 +97,7 @@ export function DiscountPopup() {
               <p className="text-gold-400 text-xs tracking-[0.3em] uppercase mb-2">
                 Welcome Offer
               </p>
-              <h3 className="font-display text-3xl text-white mb-2">10% Off</h3>
+              <h3 className="font-display text-3xl text-white mb-2">{popupPromoPercent}% Off</h3>
               <p className="text-white/60 text-sm">Your first order, just for joining us</p>
             </div>
 
