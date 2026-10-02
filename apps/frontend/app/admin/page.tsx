@@ -102,10 +102,10 @@ export default async function AdminDashboard() {
                       <span className="truncate max-w-[180px]">{product.name}</span>
                     </td>
                     <td className="py-3 text-gray-500">{product.category}</td>
-                    <td className="py-3 text-right">PKR {product.price.toLocaleString()}</td>
+                    <td className="py-3 text-right">PKR {(product.price ?? 0).toLocaleString()}</td>
                     <td className="py-3 text-right">
-                      <span className={product.stock < 10 ? "text-red-500 font-medium" : ""}>
-                        {product.stock}
+                      <span className={(product.stock ?? 0) < 10 ? "text-red-500 font-medium" : ""}>
+                        {product.stock ?? 0}
                       </span>
                     </td>
                   </tr>

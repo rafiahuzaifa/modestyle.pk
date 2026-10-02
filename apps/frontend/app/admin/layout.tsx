@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import { isAdminEmail } from "@/lib/admin";
+import { SignOutButton } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | ModestStyle.pk",
@@ -29,7 +30,7 @@ export default async function AdminLayout({
   const email = user.emailAddresses.find(
     (e) => e.id === user.primaryEmailAddressId
   )?.emailAddress;
-  if (!isAdminEmail(email)) redirect("/");
+  if (!isAdminEmail(email)) return <AccessDenied email={email} />;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -83,7 +84,9 @@ export default async function AdminLayout({
       {/* Main content */}
       <div className="flex-1 overflow-x-hidden">
         <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h1 className="text-lg font-medium">Admin</h1>
+          <h1 className="text-lg font-medium">
+            <Link href="/admin">Admin</Link>
+          </h1>
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-400">
               Logged in as {user.firstName || email}
@@ -93,7 +96,51 @@ export default async function AdminLayout({
             </div>
           </div>
         </header>
-        <div className="p-6">{children}</div>
+        {/* Mobile navigation (the sidebar is desktop-only) */}
+        <nav className="lg:hidden bg-white border-b border-gray-200 px-4 py-2 flex gap-2 overflow-x-auto">
+          {SIDEBAR_LINKS.map((link) => (
+            <Link
+              key={link.name}
+              href={link.href}
+              className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs bg-gray-100 text-gray-700 hover:bg-gold-50 hover:text-gold-700"
+            >
+              {link.name}
+            </Link>
+          ))}
+        </nav>
+        <div className="p-4 sm:p-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/** Shown instead of a silent redirect so it's clear why the panel won't open. */
+function AccessDenied({ email }: { email?: string }) {
+  const configured = (process.env.ADMIN_EMAILS || "").split(",").some((e) => e.trim());
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-white rounded-xl border border-gray-100 p-8 max-w-md text-center space-y-4">
+        <h1 className="font-display text-2xl">Admin access required</h1>
+        <p className="text-sm text-gray-500">
+          You&apos;re signed in as <span className="font-medium text-gray-800">{email || "an account without an email"}</span>,
+          which isn&apos;t on the admin list.
+        </p>
+        {!configured && (
+          <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-4 py-3 text-left">
+            No admin emails are configured on this deployment. Add <code>ADMIN_EMAILS</code> in
+            Vercel → Settings → Environment Variables (e.g. <code>you@example.com</code>) and redeploy.
+          </p>
+        )}
+        <div className="flex gap-3 justify-center pt-2">
+          <SignOutButton redirectUrl="/sign-in?redirect_url=/admin">
+            <button className="bg-secondary text-white px-5 py-2.5 rounded-lg text-sm">
+              Sign in with another account
+            </button>
+          </SignOutButton>
+          <Link href="/" className="border border-gray-200 px-5 py-2.5 rounded-lg text-sm">
+            Back to store
+          </Link>
+        </div>
       </div>
     </div>
   );
