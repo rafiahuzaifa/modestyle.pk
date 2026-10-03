@@ -4,7 +4,8 @@ import { category } from "./schemas/category";
 import { banner } from "./schemas/banner";
 import { siteSettings } from "./schemas/siteSettings";
 import { review } from "./schemas/review";
+import { contentPage } from "./schemas/contentPage";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
-  types: [product, category, banner, siteSettings, review],
+  types: [product, category, banner, siteSettings, review, contentPage],
 };
