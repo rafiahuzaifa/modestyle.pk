@@ -213,6 +213,30 @@ function toWhatsApp(phone: string) {
   return digits.startsWith("0") ? "92" + digits.slice(1) : digits;
 }
 
+/** Pre-written confirmation the admin sends from their own WhatsApp (until the
+ * WhatsApp Cloud API sends it automatically). */
+function confirmationMessage(order: Order) {
+  const addr = order.shipping_address || {};
+  const items = order.items
+    .map((i) => `• ${i.name} × ${i.quantity}${i.size || i.color ? ` (${[i.size, i.color].filter(Boolean).join(" / ")})` : ""}`)
+    .join("\n");
+  const payLine =
+    order.payment_method === "cod"
+      ? `Total to pay on delivery: PKR ${order.total.toLocaleString()}`
+      : `Order total: PKR ${order.total.toLocaleString()}`;
+  return [
+    `Assalam o Alaikum ${order.customer_name.split(" ")[0]}! 🤍`,
+    `Thank you for your order #${order.id.slice(0, 8).toUpperCase()} from ModestStyle.pk.`,
+    "",
+    items,
+    "",
+    payLine,
+    `Delivery address: ${[addr.address, addr.city].filter(Boolean).join(", ")}`,
+    "",
+    "Please reply *YES* to confirm your order so we can dispatch it. JazakAllah!",
+  ].join("\n");
+}
+
 function OrderDetails({ order }: { order: Order }) {
   const addr = order.shipping_address || {};
   const codFee = order.total - order.subtotal - order.shipping + order.discount;
@@ -240,6 +264,19 @@ function OrderDetails({ order }: { order: Order }) {
               </p>
             )}
             <p className="text-gray-500">{order.customer_email}</p>
+            {order.customer_phone && (
+              <a
+                href={`https://wa.me/${toWhatsApp(order.customer_phone)}?text=${encodeURIComponent(confirmationMessage(order))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-3 bg-green-600 text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-green-700 transition"
+              >
+                Send confirmation on WhatsApp
+              </a>
+            )}
+            {order.status === "pending" && (
+              <p className="text-[11px] text-gray-400 mt-1">When the customer replies YES, set the status to Confirmed.</p>
+            )}
           </div>
           <div className="space-y-1">
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Deliver to</p>
