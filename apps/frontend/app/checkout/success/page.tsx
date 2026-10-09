@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getOrderSummary, type OrderSummary } from "@/lib/orders";
 import { getSettings } from "@/lib/settings";
 import { whatsappHref } from "@/lib/settings-shared";
+import { SocialFollow } from "@/app/components/SocialFollow";
 
 export const dynamic = "force-dynamic";
 
@@ -122,6 +123,10 @@ export default async function CheckoutSuccessPage({
           >
             WhatsApp Us
           </a>
+        </div>
+
+        <div className="mt-10 pt-8 border-t border-gray-100">
+          <SocialFollow title="Follow us for new arrivals, styling tips & exclusive offers 🤍" />
         </div>
       </div>
     </div>

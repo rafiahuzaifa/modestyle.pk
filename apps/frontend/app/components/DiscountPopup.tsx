@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSettings } from "@/app/components/SettingsProvider";
+import { SocialFollow } from "@/app/components/SocialFollow";
 import { AnimatePresence, motion } from "framer-motion";
 
 const STORAGE_KEY = "ms_discount_popup_dismissed_at";
@@ -112,6 +113,7 @@ export function DiscountPopup() {
                       {PROMO_CODE}
                     </span>
                   </div>
+                  <SocialFollow compact title="Follow us so you never miss a sale:" />
                   <button
                     onClick={dismiss}
                     className="text-xs text-gray-400 hover:text-gray-600 transition"

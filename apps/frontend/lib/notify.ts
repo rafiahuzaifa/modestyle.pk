@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/neon";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { adminEmails } from "@/lib/admin";
+import { getSettings } from "@/lib/settings";
 import { isWhatsAppConfigured, sendTemplate, TEMPLATES } from "@/lib/whatsapp";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
@@ -119,6 +120,18 @@ export async function notifyNewOrder(orderId: string) {
       ${table}
       <p><a href="${SITE_URL}/admin/orders">Open in admin panel</a></p>`;
 
+    const settings = await getSettings();
+    const socials = (
+      [
+        ["Instagram", settings.instagram],
+        ["Facebook", settings.facebook],
+        ["TikTok", settings.tiktok],
+      ] as const
+    )
+      .filter(([, url]) => url)
+      .map(([name, url]) => `<a href="${esc(url)}" style="color:#b8964e">${name}</a>`)
+      .join(" · ");
+
     const customerHtml = `
       <h2>Thank you for your order, ${esc(order.customer_name.split(" ")[0])}!</h2>
       <p>We've received your order <b>#${ref}</b>. ${
@@ -128,6 +141,7 @@ export async function notifyNewOrder(orderId: string) {
       }</p>
       ${table}
       <p><b>Delivering to:</b> ${esc(addressLine)}<br><b>Payment:</b> ${esc(payment)}</p>
+      ${socials ? `<p>Follow us for new arrivals & exclusive offers: ${socials}</p>` : ""}
       <p>Questions? Just reply to this email.<br>— ${esc(SITE_NAME)}</p>`;
 
     await Promise.allSettled([

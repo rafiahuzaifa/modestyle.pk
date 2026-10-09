@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useSettings } from "@/app/components/SettingsProvider";
 import { whatsappHref } from "@/lib/settings-shared";
+import { SocialFollow } from "@/app/components/SocialFollow";
 
 const FOOTER_LINKS = {
   Shop: [
@@ -117,6 +118,9 @@ const Footer = () => {
               {error && <p className="text-red-300 text-xs mt-2">{error}</p>}
             </>
           )}
+          <div className="mt-8">
+            <SocialFollow dark title="Or follow us — new arrivals & sales first:" />
+          </div>
         </div>
       </div>
 
