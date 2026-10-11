@@ -32,15 +32,46 @@ const esc = (v: unknown) =>
   String(v ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const pkr = (n: number) => `PKR ${Math.round(Number(n)).toLocaleString("en-PK")}`;
 
+let logReady: Promise<unknown> | null = null;
+
+/** Records every send attempt so delivery problems can be diagnosed from the database. */
+async function logEmail(to: string[], subject: string, status: number, detail: string) {
+  try {
+    const sql = getDb();
+    logReady ??= sql`
+      CREATE TABLE IF NOT EXISTS email_log (
+        id SERIAL PRIMARY KEY,
+        recipients TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        status INT NOT NULL,
+        detail TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `;
+    await logReady;
+    await sql`INSERT INTO email_log (recipients, subject, status, detail) VALUES (${to.join(", ")}, ${subject.slice(0, 200)}, ${status}, ${detail.slice(0, 500)})`;
+  } catch (err) {
+    logReady = null;
+    console.error("Email log failed:", err);
+  }
+}
+
 export async function sendEmail(to: string[], subject: string, html: string, headers?: Record<string, string>) {
   if (!to.length || !isEmailConfigured()) return false;
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to, subject, html, headers }),
-  });
-  if (!res.ok) console.error("Resend error:", res.status, await res.text());
-  return res.ok;
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: FROM, to, subject, html, headers }),
+    });
+    const detail = await res.text();
+    if (!res.ok) console.error("Resend error:", res.status, detail);
+    await logEmail(to, subject, res.status, detail);
+    return res.ok;
+  } catch (err) {
+    await logEmail(to, subject, 0, err instanceof Error ? err.message : String(err));
+    return false;
+  }
 }
 
 interface OrderRow {
