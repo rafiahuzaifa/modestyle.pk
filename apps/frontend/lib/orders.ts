@@ -52,11 +52,13 @@ export async function recomputeOrderTotals(
   }
 
   const productIds = [...new Set(items.map((i) => i.product_id))] as string[];
-  const products = await client.fetch<{ _id: string; price: number }[]>(
-    `*[_type == "product" && _id in $ids]{ _id, price }`,
+  const products = await client.fetch<{ _id: string; price: number; name: string }[]>(
+    `*[_type == "product" && _id in $ids]{ _id, price, name }`,
     { ids: productIds }
   );
   const priceById = new Map(products.map((p) => [p._id, p.price]));
+  // Product names also come from the catalogue, never from the client.
+  const nameById = new Map(products.map((p) => [p._id, p.name]));
 
   for (const item of items) {
     if (!priceById.has(item.product_id)) {
@@ -83,7 +85,7 @@ export async function recomputeOrderTotals(
   const codFee = paymentMethod === "cod" ? settings.codFee : 0;
   const total = subtotal + shippingCost - discount + codFee;
 
-  return { subtotal, discount, codFee, total, shippingCost, priceById, promoApplied };
+  return { subtotal, discount, codFee, total, shippingCost, priceById, nameById, promoApplied };
 }
 
 export interface CreateOrderParams {
@@ -119,7 +121,7 @@ function validateCustomer(params: CreateOrderParams) {
  * Returns the created order's id and computed totals. COD orders include COD_FEE in the total. */
 export async function createOrder(params: CreateOrderParams) {
   const phone = validateCustomer(params);
-  const { subtotal, discount, codFee, total, shippingCost, priceById, promoApplied } =
+  const { subtotal, discount, codFee, total, shippingCost, priceById, nameById, promoApplied } =
     await recomputeOrderTotals(params.items, params.shipping, params.promoCode, params.paymentMethod);
 
   const sql = getDb();
@@ -145,7 +147,7 @@ export async function createOrder(params: CreateOrderParams) {
       INSERT INTO order_items (id, order_id, product_id, name, price, quantity, size, color)
       VALUES (
         ${randomUUID()}, ${orderId}, ${item.product_id},
-        ${item.name}, ${priceById.get(item.product_id)}, ${item.quantity},
+        ${nameById.get(item.product_id) || item.name}, ${priceById.get(item.product_id)}, ${item.quantity},
         ${item.size || null}, ${item.color || null}
       )
     `;
