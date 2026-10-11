@@ -38,9 +38,6 @@ export const metadata: Metadata = {
     "prayer wear", "Islamic fashion", "ModestStyle", "buy hijab online Pakistan",
     "abaya online Pakistan", "modest clothing Pakistan",
   ],
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     siteName: "ModestStyle.pk",
     locale: "en_PK",

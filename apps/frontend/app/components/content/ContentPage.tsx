@@ -238,5 +238,18 @@ export async function ContentPage({ slug }: { slug: PageSlug }) {
 
 export async function contentPageMetadata(slug: PageSlug) {
   const { page } = await getPage(slug);
-  return { title: page.title, description: page.subtitle || undefined };
+  // Search snippets need ~120–160 chars: extend a short subtitle with the page's first text.
+  const firstText = page.blocks
+    .map((b) => (typeof b.body === "string" ? b.body : Array.isArray(b.items) && typeof b.items[0] === "string" ? b.items[0] : ""))
+    .find(Boolean);
+  const description = [page.subtitle, page.subtitle.length < 100 ? firstText : ""]
+    .filter(Boolean)
+    .join(" — ")
+    .replace(/\{[a-zA-Z]+\}/g, "")
+    .slice(0, 300);
+  return {
+    title: page.title,
+    description: description || `${page.title} — ModestStyle.pk, premium hijabs & abayas in Pakistan.`,
+    alternates: { canonical: `/${slug}` },
+  };
 }

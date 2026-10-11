@@ -57,15 +57,21 @@ export async function generateMetadata({
   const product = await client.fetch<Product>(PRODUCT_BY_SLUG, { slug });
   if (!product) return { title: "Product Not Found" };
 
+  // Search snippets need ~120–160 chars; fall back to a generated line when the product has no description.
+  const description =
+    product.description && product.description.length >= 70
+      ? product.description.slice(0, 300)
+      : `Buy ${product.name} online in Pakistan for PKR ${product.price.toLocaleString("en-PK")}.${product.description ? " " + product.description : ""} Cash on Delivery & 7-day easy returns at ModestStyle.pk.`;
+
   return {
     title: product.name,
-    description: product.description,
+    description,
     alternates: {
       canonical: `/products/${product.slug}`,
     },
     openGraph: {
       title: product.name,
-      description: product.description,
+      description,
       url: `${SITE_URL}/products/${product.slug}`,
       images: product.images?.[0] ? [{ url: product.images[0] }] : [],
     },

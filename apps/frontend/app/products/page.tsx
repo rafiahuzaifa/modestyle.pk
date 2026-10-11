@@ -9,7 +9,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Shop Premium Modest Fashion",
   description:
-    "Discover our curated collection of luxury hijabs, abayas, jilbabs & accessories.",
+    "Shop hijabs, abayas, jilbabs, prayer wear & accessories online in Pakistan. Cash on Delivery nationwide, easy 7-day returns.",
+  alternates: { canonical: "/products" },
 };
 
 interface Product {

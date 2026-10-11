@@ -65,11 +65,11 @@ const Navbar = () => {
 
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <h1 className="font-display text-2xl lg:text-3xl tracking-wide">
+            <span className="block font-display text-2xl lg:text-3xl tracking-wide">
               <span className="text-gold-500">Modest</span>
               <span className="text-secondary">Style</span>
               <span className="text-gold-400 text-sm">.pk</span>
-            </h1>
+            </span>
           </Link>
 
           {/* Desktop Nav */}

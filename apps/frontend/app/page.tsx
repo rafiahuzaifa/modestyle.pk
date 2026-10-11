@@ -54,6 +54,8 @@ async function getHomeData() {
 // Re-check Sanity every 5 minutes (admin edits also refresh it instantly).
 export const revalidate = 300;
 
+export const metadata = { alternates: { canonical: "/" } };
+
 export default async function HomePage() {
   const [{ banners, categories, bestsellers, newArrivals }, settings] =
     await Promise.all([getHomeData(), getSettings()]);
