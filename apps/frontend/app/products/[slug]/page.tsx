@@ -61,7 +61,7 @@ export async function generateMetadata({
   const description =
     product.description && product.description.length >= 70
       ? product.description.slice(0, 300)
-      : `Buy ${product.name} online in Pakistan for PKR ${product.price.toLocaleString("en-PK")}.${product.description ? " " + product.description : ""} Cash on Delivery & 7-day easy returns at ModestStyle.pk.`;
+      : `Buy ${product.name} online in Pakistan for PKR ${product.price.toLocaleString("en-PK")}.${product.description ? " " + product.description : ""} Cash on Delivery & 7-day easy returns at ModestStyle PK.`;
 
   return {
     title: product.name,

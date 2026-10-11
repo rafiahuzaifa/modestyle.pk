@@ -226,7 +226,7 @@ function confirmationMessage(order: Order) {
       : `Order total: PKR ${order.total.toLocaleString()}`;
   return [
     `Assalam o Alaikum ${order.customer_name.split(" ")[0]}! 🤍`,
-    `Thank you for your order #${order.id.slice(0, 8).toUpperCase()} from ModestStyle.pk.`,
+    `Thank you for your order #${order.id.slice(0, 8).toUpperCase()} from ModestStyle PK.`,
     "",
     items,
     "",

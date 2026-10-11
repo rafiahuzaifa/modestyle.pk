@@ -28,8 +28,8 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "ModestStyle.pk — Premium Hijabs & Modest Fashion in Pakistan",
-    template: "%s | ModestStyle.pk",
+    default: "ModestStyle PK — Premium Hijabs & Modest Fashion in Pakistan",
+    template: "%s | ModestStyle PK",
   },
   description:
     "Pakistan's finest modest fashion destination. Shop luxury hijabs, abayas, jilbabs, prayer wear & accessories with nationwide delivery and free shipping over PKR 5,000.",
@@ -39,18 +39,18 @@ export const metadata: Metadata = {
     "abaya online Pakistan", "modest clothing Pakistan",
   ],
   openGraph: {
-    siteName: "ModestStyle.pk",
+    siteName: "ModestStyle PK",
     locale: "en_PK",
     type: "website",
     url: SITE_URL,
-    title: "ModestStyle.pk — Premium Hijabs & Modest Fashion in Pakistan",
+    title: "ModestStyle PK — Premium Hijabs & Modest Fashion in Pakistan",
     description:
       "Shop luxury hijabs, abayas, jilbabs, prayer wear & accessories with nationwide delivery across Pakistan.",
-    images: [{ url: "/sc6.webp", width: 1200, height: 630, alt: "ModestStyle.pk" }],
+    images: [{ url: "/sc6.webp", width: 1200, height: 630, alt: "ModestStyle PK" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ModestStyle.pk — Premium Hijabs & Modest Fashion in Pakistan",
+    title: "ModestStyle PK — Premium Hijabs & Modest Fashion in Pakistan",
     description:
       "Shop luxury hijabs, abayas, jilbabs, prayer wear & accessories with nationwide delivery across Pakistan.",
     images: ["/sc6.webp"],
@@ -73,7 +73,7 @@ export default async function RootLayout({
       {
         "@type": "Organization",
         "@id": `${SITE_URL}/#organization`,
-        name: "ModestStyle.pk",
+        name: "ModestStyle PK",
         url: SITE_URL,
         logo: `${SITE_URL}/sc6.webp`,
         sameAs: [settings.instagram, settings.facebook, settings.tiktok].filter(Boolean),
@@ -82,7 +82,7 @@ export default async function RootLayout({
         "@type": "WebSite",
         "@id": `${SITE_URL}/#website`,
         url: SITE_URL,
-        name: "ModestStyle.pk",
+        name: "ModestStyle PK",
         publisher: { "@id": `${SITE_URL}/#organization` },
         potentialAction: {
           "@type": "SearchAction",

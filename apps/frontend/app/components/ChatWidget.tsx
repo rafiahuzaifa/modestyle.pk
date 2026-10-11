@@ -119,7 +119,7 @@ export function ChatWidget() {
             </div>
             <div className="flex-1">
               <p className="font-semibold text-sm">ModestStyle Assistant</p>
-              <p className="text-[11px] text-gold-300/80">Powered by AI • Only for ModestStyle.pk</p>
+              <p className="text-[11px] text-gold-300/80">Powered by AI • Only for ModestStyle PK</p>
             </div>
             <button
               onClick={() => setOpen(false)}

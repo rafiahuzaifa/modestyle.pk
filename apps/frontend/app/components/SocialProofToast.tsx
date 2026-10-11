@@ -147,7 +147,7 @@ export function SocialProofToast() {
             <div className="flex items-center gap-1.5 mt-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0 animate-pulse" />
               <span className="text-[10px] text-gray-400">{toast.timeAgo}</span>
-              <span className="text-[10px] text-gray-300">· ModestStyle.pk</span>
+              <span className="text-[10px] text-gray-300">· ModestStyle PK</span>
             </div>
           </div>
 

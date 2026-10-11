@@ -50,7 +50,7 @@ export default async function AdminDashboard() {
       <div>
         <h2 className="text-2xl font-display">Dashboard</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Overview of your ModestStyle.pk store
+          Overview of your ModestStyle PK store
         </p>
       </div>
 

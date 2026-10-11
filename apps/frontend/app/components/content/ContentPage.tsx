@@ -249,7 +249,7 @@ export async function contentPageMetadata(slug: PageSlug) {
     .slice(0, 300);
   return {
     title: page.title,
-    description: description || `${page.title} — ModestStyle.pk, premium hijabs & abayas in Pakistan.`,
+    description: description || `${page.title} — ModestStyle PK, premium hijabs & abayas in Pakistan.`,
     alternates: { canonical: `/${slug}` },
   };
 }

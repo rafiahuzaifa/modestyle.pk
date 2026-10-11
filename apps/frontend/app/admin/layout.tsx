@@ -6,7 +6,7 @@ import { adminEmails, isAdminEmail, verifiedPrimaryEmail } from "@/lib/admin";
 import { SignOutButton } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard | ModestStyle.pk",
+  title: "Admin Dashboard | ModestStyle PK",
 };
 
 const SIDEBAR_LINKS = [
@@ -42,7 +42,7 @@ export default async function AdminLayout({
           <Link href="/admin">
             <h2 className="font-display text-lg">
               <span className="text-gold-400">Modest</span>Style
-              <span className="text-gold-400 text-xs">.pk</span>
+              <span className="text-gold-400 text-xs ml-1">PK</span>
             </h2>
             <p className="text-[11px] text-white/40 mt-1">Admin Panel</p>
           </Link>

@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       pp_TxnDateTime: txnDateTime,
       pp_TxnExpiryDateTime: txnExpiry,
       pp_BillReference: `order-${orderId.slice(0, 8)}`,
-      pp_Description: `ModestStyle.pk Order #${orderId.slice(0, 8)}`,
+      pp_Description: `ModestStyle PK Order #${orderId.slice(0, 8)}`,
       pp_MobileNumber: walletNumber,
       pp_CNIC: "",
     };

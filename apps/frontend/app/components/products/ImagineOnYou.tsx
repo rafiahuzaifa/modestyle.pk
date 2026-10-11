@@ -224,7 +224,7 @@ export function ImagineOnYou({ productImage, productName }: Props) {
 
       ctx.fillStyle = "rgba(212,168,83,0.7)";
       ctx.font = "10px sans-serif";
-      ctx.fillText("Virtual Try-On by ModestStyle.pk", W / 2, bannerY + 42);
+      ctx.fillText("Virtual Try-On by ModestStyle PK", W / 2, bannerY + 42);
 
       // "YOU" label on left photo
       ctx.fillStyle = "rgba(212,168,83,0.9)";
@@ -285,7 +285,7 @@ export function ImagineOnYou({ productImage, productName }: Props) {
             </div>
             <p className="text-white text-sm font-semibold">Your Try-On Result</p>
           </div>
-          <span className="text-gold-400 text-xs">✨ ModestStyle.pk</span>
+          <span className="text-gold-400 text-xs">✨ ModestStyle PK</span>
         </div>
 
         {/* eslint-disable-next-line @next/next/no-img-element */}

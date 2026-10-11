@@ -68,7 +68,7 @@ const Navbar = () => {
             <span className="block font-display text-2xl lg:text-3xl tracking-wide">
               <span className="text-gold-500">Modest</span>
               <span className="text-secondary">Style</span>
-              <span className="text-gold-400 text-sm">.pk</span>
+              <span className="text-gold-400 text-sm ml-1">PK</span>
             </span>
           </Link>
 

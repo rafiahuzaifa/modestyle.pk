@@ -4,7 +4,7 @@ import { formatWhatsApp } from "@/lib/settings-shared";
 
 export const metadata = {
   title: "Contact Us",
-  description: "Contact ModestStyle.pk on WhatsApp or email for orders, sizing, returns and wholesale enquiries. Mon–Sat, 9am–7pm PKT.",
+  description: "Contact ModestStyle PK on WhatsApp or email for orders, sizing, returns and wholesale enquiries. Mon–Sat, 9am–7pm PKT.",
   alternates: { canonical: "/contact" },
 };
 

@@ -27,7 +27,7 @@ function offerEmailHtml(opts: {
     .join("");
   return `
   <div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;color:#1f1f1f">
-    <p style="font-size:22px;margin:0 0 4px"><span style="color:#b8964e">Modest</span>Style<span style="color:#b8964e;font-size:13px">.pk</span></p>
+    <p style="font-size:22px;margin:0 0 4px"><span style="color:#b8964e">Modest</span>Style<span style="color:#b8964e;font-size:13px"> PK</span></p>
     <hr style="border:none;border-top:1px solid #eee;margin:12px 0 20px">
     <h2 style="font-weight:normal;margin:0 0 14px">${esc(opts.headline)}</h2>
     <p style="margin:0 0 14px">Assalam o Alaikum ${esc(firstName(opts.name))},</p>

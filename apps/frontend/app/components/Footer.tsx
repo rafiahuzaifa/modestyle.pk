@@ -131,7 +131,7 @@ const Footer = () => {
           <div className="col-span-2 md:col-span-1">
             <h2 className="font-display text-xl mb-3">
               <span className="text-gold-400">Modest</span>Style
-              <span className="text-gold-400 text-xs">.pk</span>
+              <span className="text-gold-400 text-xs ml-1">PK</span>
             </h2>
             <p className="text-white/50 text-sm leading-relaxed mb-5">
               Pakistan&apos;s finest modest fashion destination. Elegance in every drape.
@@ -207,7 +207,7 @@ const Footer = () => {
       {/* Bottom */}
       <div className="border-t border-white/10">
         <div className="container mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center text-xs text-white/30 gap-2">
-          <p>&copy; {new Date().getFullYear()} ModestStyle.pk. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ModestStyle PK. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-white/60 transition">Privacy</Link>
             <Link href="/terms" className="hover:text-white/60 transition">Terms</Link>

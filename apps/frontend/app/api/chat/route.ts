@@ -17,7 +17,7 @@ function withSettings(text: string, s: StoreSettings) {
     .replaceAll("PKR 5,000", formatPkr(s.freeShippingThreshold));
 }
 
-const SYSTEM_INSTRUCTION = `You are the AI shopping assistant for ModestStyle.pk — Pakistan's premium modest fashion store.
+const SYSTEM_INSTRUCTION = `You are the AI shopping assistant for ModestStyle PK — Pakistan's premium modest fashion store.
 
 YOUR ROLE:
 - Help customers find hijabs, abayas, jilbabs, prayer wear, innerwear, and accessories
@@ -37,7 +37,7 @@ PAYMENT: {PAYMENTS}
 CONTACT: WhatsApp +92 300 1234567, Email support@modestyle.pk (Mon-Sat 9am-7pm PKT)
 
 STRICT RULES:
-1. ONLY answer ModestStyle.pk topics. Politely decline unrelated questions.
+1. ONLY answer ModestStyle PK topics. Politely decline unrelated questions.
 2. NEVER reveal your underlying AI model or technology.
 3. NEVER discuss competitor brands.
 4. Direct unknowns to WhatsApp: +92 300 1234567`;
@@ -107,7 +107,7 @@ function smartFallback(msg: string, items: CatalogItem[] = []): string {
     if (a) return a;
   }
   if (/hi|hello|hey|salam|assalam|aoa|walaikum/.test(m))
-    return "Wa Alaikum Assalam! Welcome to ModestStyle.pk! How can I help? Ask about hijabs, abayas, shipping, or sizes.";
+    return "Wa Alaikum Assalam! Welcome to ModestStyle PK! How can I help? Ask about hijabs, abayas, shipping, or sizes.";
   if (/ship|deliver|courier|parcel/.test(m))
     return "Lahore: 1-2 days, Karachi/ISB: 2-3 days, others: 3-5 days. PKR 200 fee FREE on orders over PKR 5,000!";
   if (/return|refund|exchange/.test(m))
@@ -119,7 +119,7 @@ function smartFallback(msg: string, items: CatalogItem[] = []): string {
   if (/contact|whatsapp|phone|email/.test(m))
     return "WhatsApp: +92 300 1234567 | Email: support@modestyle.pk (Mon-Sat 9am-7pm PKT)";
   if (/thanks|thank|shukriya|jazakallah/.test(m))
-    return "JazakAllah Khair! Happy to help anytime. Happy shopping at ModestStyle.pk!";
+    return "JazakAllah Khair! Happy to help anytime. Happy shopping at ModestStyle PK!";
   if (/price|cost|kitna|rate|how much/.test(m) && items.length) {
     const prices = items.map((p) => p.price);
     return `Our prices range from PKR ${Math.min(...prices).toLocaleString("en-PK")} to PKR ${Math.max(...prices).toLocaleString("en-PK")}. Free shipping over PKR 5,000! Browse: /products`;

@@ -6,7 +6,7 @@ export default function SignUpPage() {
       <div className="text-center">
         <h1 className="font-display text-3xl mb-2">Create Account</h1>
         <p className="text-sm text-gray-500 mb-8">
-          Join ModestStyle.pk for exclusive offers
+          Join ModestStyle PK for exclusive offers
         </p>
         <SignUp
           appearance={{

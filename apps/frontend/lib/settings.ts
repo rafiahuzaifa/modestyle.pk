@@ -88,7 +88,7 @@ export async function findPromo(code: unknown): Promise<PromoCode | null> {
 /** Saves settings and refreshes every page that uses them. Caller must check admin access. */
 export async function saveSettings(s: StoreSettings) {
   // Patch (not replace) so fields edited elsewhere, e.g. tagline in Sanity Studio, survive.
-  await writeClient.createIfNotExists({ _id: SETTINGS_DOC_ID, _type: "siteSettings", siteName: "ModestStyle.pk" });
+  await writeClient.createIfNotExists({ _id: SETTINGS_DOC_ID, _type: "siteSettings", siteName: "ModestStyle PK" });
   await writeClient
     .patch(SETTINGS_DOC_ID)
     .set({

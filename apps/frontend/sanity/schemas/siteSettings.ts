@@ -10,7 +10,7 @@ export const siteSettings = defineType({
       name: "siteName",
       title: "Site Name",
       type: "string",
-      initialValue: "ModestStyle.pk",
+      initialValue: "ModestStyle PK",
     }),
     defineField({
       name: "tagline",

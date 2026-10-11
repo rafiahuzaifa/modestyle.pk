@@ -262,14 +262,14 @@ export function fillTokens(text: string, t: TokenValues) {
 export const DEFAULT_PAGES: Record<PageSlug, PageContent> = {
   about: {
     eyebrow: "Our Story",
-    title: "About ModestStyle.pk",
+    title: "About ModestStyle PK",
     subtitle: "Pakistan's finest destination for elegant modest fashion — where faith meets style.",
     blocks: [
       {
         type: "text",
         eyebrow: "Our Mission",
         heading: "Elegance in Every Drape",
-        body: "At ModestStyle.pk, we believe that modest fashion is not a limitation — it is an expression of grace, identity, and confidence. Founded in Lahore, we curate premium hijabs, abayas, and modest wear that blend timeless elegance with everyday comfort. Every piece in our collection is thoughtfully selected to celebrate the modern Pakistani woman.",
+        body: "At ModestStyle PK, we believe that modest fashion is not a limitation — it is an expression of grace, identity, and confidence. Founded in Lahore, we curate premium hijabs, abayas, and modest wear that blend timeless elegance with everyday comfort. Every piece in our collection is thoughtfully selected to celebrate the modern Pakistani woman.",
       },
       {
         type: "cards",
@@ -286,7 +286,7 @@ export const DEFAULT_PAGES: Record<PageSlug, PageContent> = {
         type: "text",
         eyebrow: "How It Started",
         heading: "Born from a Passion for Modest Fashion",
-        body: "ModestStyle.pk was founded by a group of passionate women who were frustrated by the lack of high-quality modest fashion options in Pakistan. Shopping for elegant hijabs and abayas meant either settling for poor quality or paying exorbitant prices for imported pieces.\n\nWe decided to change that. Starting from a small studio in Lahore, we began sourcing the finest fabrics — georgette, chiffon, crepe, and luxury cashmere — and working with skilled local tailors to create modest wear that Pakistani women truly deserve.\n\nToday, we ship across Pakistan, serving thousands of happy customers who trust us for their everyday modest wear, special occasions, and everything in between.",
+        body: "ModestStyle PK was founded by a group of passionate women who were frustrated by the lack of high-quality modest fashion options in Pakistan. Shopping for elegant hijabs and abayas meant either settling for poor quality or paying exorbitant prices for imported pieces.\n\nWe decided to change that. Starting from a small studio in Lahore, we began sourcing the finest fabrics — georgette, chiffon, crepe, and luxury cashmere — and working with skilled local tailors to create modest wear that Pakistani women truly deserve.\n\nToday, we ship across Pakistan, serving thousands of happy customers who trust us for their everyday modest wear, special occasions, and everything in between.",
       },
       {
         type: "stats",
@@ -521,7 +521,7 @@ export const DEFAULT_PAGES: Record<PageSlug, PageContent> = {
         type: "callout",
         tone: "gold",
         heading: "",
-        body: "Your privacy matters to us. This policy explains what data we collect, how we use it, and how we protect it. By using ModestStyle.pk, you agree to this policy.",
+        body: "Your privacy matters to us. This policy explains what data we collect, how we use it, and how we protect it. By using ModestStyle PK, you agree to this policy.",
       },
       {
         type: "list",
@@ -593,7 +593,7 @@ export const DEFAULT_PAGES: Record<PageSlug, PageContent> = {
         type: "list",
         heading: "7. Children's Privacy",
         tone: "default",
-        items: ["ModestStyle.pk is not intended for children under 13. We do not knowingly collect data from children."],
+        items: ["ModestStyle PK is not intended for children under 13. We do not knowingly collect data from children."],
       },
       {
         type: "list",
@@ -619,17 +619,17 @@ export const DEFAULT_PAGES: Record<PageSlug, PageContent> = {
         type: "callout",
         tone: "gold",
         heading: "",
-        body: "By accessing or using ModestStyle.pk, you agree to be bound by these Terms of Service. Please read them carefully before placing an order or using our services.",
+        body: "By accessing or using ModestStyle PK, you agree to be bound by these Terms of Service. Please read them carefully before placing an order or using our services.",
       },
       { type: "text", eyebrow: "", heading: "1. Acceptance of Terms", body: "By browsing our website, creating an account, or placing an order, you confirm that you have read, understood, and agree to these Terms of Service and our Privacy Policy." },
       { type: "text", eyebrow: "", heading: "2. Products & Pricing", body: "All prices are listed in Pakistani Rupees (PKR) and are inclusive of applicable taxes. We reserve the right to change prices at any time. In the event of a pricing error, we will notify you and give you the option to confirm or cancel your order. Product images are for illustrative purposes — slight colour variations may occur due to screen settings." },
       { type: "text", eyebrow: "", heading: "3. Orders & Payment", body: "Orders are confirmed once our team verifies them with you (for Cash on Delivery) or once payment is received. We reserve the right to refuse or cancel any order at our discretion. For COD orders, a non-refundable advance may be required for high-value orders. Cash on Delivery carries a {codFee} fee." },
-      { type: "text", eyebrow: "", heading: "4. Shipping & Delivery", body: "We ship within Pakistan only. Delivery timelines are estimates and may vary due to courier delays, public holidays, or unforeseen circumstances. ModestStyle.pk is not liable for delays caused by courier partners. Risk of loss passes to you upon delivery to the courier." },
+      { type: "text", eyebrow: "", heading: "4. Shipping & Delivery", body: "We ship within Pakistan only. Delivery timelines are estimates and may vary due to courier delays, public holidays, or unforeseen circumstances. ModestStyle PK is not liable for delays caused by courier partners. Risk of loss passes to you upon delivery to the courier." },
       { type: "text", eyebrow: "", heading: "5. Returns & Exchanges", body: "Returns are accepted within 7 days of delivery for unused items in original condition. Sale items, accessories, and custom orders are non-returnable. Refer to our Returns & Exchange Policy for full details. Refunds are processed via the original payment method or as store credit." },
       { type: "text", eyebrow: "", heading: "6. User Accounts", body: "You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorised use of your account. We reserve the right to suspend or terminate accounts that violate these terms." },
-      { type: "text", eyebrow: "", heading: "7. Intellectual Property", body: "All content on ModestStyle.pk — including images, text, logos, and design — is the property of ModestStyle.pk and is protected by Pakistani and international copyright laws. You may not reproduce, distribute, or use our content without express written permission." },
+      { type: "text", eyebrow: "", heading: "7. Intellectual Property", body: "All content on ModestStyle PK — including images, text, logos, and design — is the property of ModestStyle PK and is protected by Pakistani and international copyright laws. You may not reproduce, distribute, or use our content without express written permission." },
       { type: "text", eyebrow: "", heading: "8. Prohibited Activities", body: "You agree not to: use our site for any unlawful purpose, attempt to gain unauthorised access to our systems, submit false or misleading information, or interfere with the proper operation of our platform." },
-      { type: "text", eyebrow: "", heading: "9. Limitation of Liability", body: "ModestStyle.pk is not liable for indirect, incidental, or consequential damages arising from the use of our products or services. Our maximum liability to you will not exceed the amount paid for the specific order in question." },
+      { type: "text", eyebrow: "", heading: "9. Limitation of Liability", body: "ModestStyle PK is not liable for indirect, incidental, or consequential damages arising from the use of our products or services. Our maximum liability to you will not exceed the amount paid for the specific order in question." },
       { type: "text", eyebrow: "", heading: "10. Governing Law", body: "These Terms are governed by the laws of the Islamic Republic of Pakistan. Any disputes shall be subject to the exclusive jurisdiction of the courts of Lahore, Punjab." },
       { type: "text", eyebrow: "", heading: "11. Changes to Terms", body: "We reserve the right to update these Terms at any time. Continued use of our site after changes constitutes acceptance of the new Terms. We will notify you of material changes via email." },
       { type: "text", eyebrow: "", heading: "12. Contact", body: "For questions about these Terms, contact us at {email} or WhatsApp {whatsapp}." },
