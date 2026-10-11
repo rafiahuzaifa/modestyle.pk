@@ -4,6 +4,9 @@ import { formatPkr, formatWhatsApp, type StoreSettings } from "@/lib/settings-sh
 
 /** The copy below is written with placeholder contact/shipping values; swap in the live
  * Admin → Settings values so the assistant never quotes stale numbers. */
+// gemini-1.5 models were retired by Google; override with GEMINI_MODEL if needed.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
 function withSettings(text: string, s: StoreSettings) {
   return text
     .replaceAll("+92 300 1234567", formatWhatsApp(s.whatsappNumber))
@@ -108,7 +111,7 @@ export async function POST(req: NextRequest) {
     };
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
