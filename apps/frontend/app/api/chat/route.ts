@@ -78,7 +78,9 @@ function catalogText(items: CatalogItem[]) {
 }
 
 function categoryAnswer(items: CatalogItem[], test: RegExp, label: string) {
-  const list = items.filter((p) => test.test(`${p.category} ${p.name}`.toLowerCase()));
+  // Match the category first (so "hijab" doesn't pull in hijab pins), then fall back to names.
+  const byCategory = items.filter((p) => test.test((p.category || "").toLowerCase()));
+  const list = byCategory.length ? byCategory : items.filter((p) => test.test(p.name.toLowerCase()));
   if (!list.length) return null;
   const prices = list.map((p) => p.price);
   const sample = list.slice(0, 4).map((p) => `${p.name} PKR ${p.price.toLocaleString("en-PK")}`).join(" | ");
