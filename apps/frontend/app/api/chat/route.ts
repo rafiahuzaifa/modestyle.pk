@@ -6,8 +6,8 @@ import { formatPkr, formatWhatsApp, type StoreSettings } from "@/lib/settings-sh
 
 /** The copy below is written with placeholder contact/shipping values; swap in the live
  * Admin → Settings values so the assistant never quotes stale numbers. */
-// gemini-1.5 models were retired by Google; override with GEMINI_MODEL if needed.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Google retires Gemini models for new keys over time; override with GEMINI_MODEL if needed.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 function withSettings(text: string, s: StoreSettings) {
   return text

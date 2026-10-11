@@ -5,7 +5,7 @@ import { CatalogError } from "@/lib/catalog-admin";
 
 export const maxDuration = 60;
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 const INSTRUCTIONS = `You are the AI Advisor for ModestStyle.pk, a Pakistani online store for hijabs, abayas and modest wear.
 You talk to the store owner. Base every answer on the store report provided (sales, orders, stock, competitor prices from KEF, Hijabeaze, The Women Zone and Scarfs.pk, website health, marketing).
