@@ -3,6 +3,8 @@ import { getSettings } from "@/lib/settings";
 import { availablePaymentMethods } from "@/lib/payments";
 import { client } from "@/sanity/lib/client";
 import { callGemini } from "@/lib/gemini";
+
+export const maxDuration = 60;
 import { formatPkr, formatWhatsApp, type StoreSettings } from "@/lib/settings-shared";
 
 /** The copy below is written with placeholder contact/shipping values; swap in the live
