@@ -13,12 +13,13 @@ export function isEmailConfigured() {
   return !!RESEND_API_KEY && !RESEND_API_KEY.startsWith("your_");
 }
 
+/** ORDER_NOTIFY_EMAILS if it holds any address, otherwise the admin allowlist. */
 function adminRecipients(): string[] {
-  if (!process.env.ORDER_NOTIFY_EMAILS) return adminEmails();
-  return process.env.ORDER_NOTIFY_EMAILS
+  const notify = (process.env.ORDER_NOTIFY_EMAILS || "")
     .split(",")
-    .map((e) => e.trim())
-    .filter(Boolean);
+    .map((e) => e.trim().replace(/^["']|["']$/g, ""))
+    .filter((e) => e.includes("@"));
+  return notify.length ? notify : adminEmails();
 }
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -57,7 +58,11 @@ async function logEmail(to: string[], subject: string, status: number, detail: s
 }
 
 export async function sendEmail(to: string[], subject: string, html: string, headers?: Record<string, string>) {
-  if (!to.length || !isEmailConfigured()) return false;
+  if (!isEmailConfigured()) return false;
+  if (!to.length) {
+    await logEmail([], subject, 0, "No recipient address (check ORDER_NOTIFY_EMAILS / ADMIN_EMAILS on Vercel)");
+    return false;
+  }
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
