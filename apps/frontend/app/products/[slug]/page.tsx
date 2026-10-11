@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { client } from "@/sanity/lib/client";
@@ -12,6 +11,7 @@ import { AddToCartSection } from "@/app/components/products/AddToCartSection";
 import { ImagineOnYou } from "@/app/components/products/ImagineOnYou";
 import { TrackProductView } from "@/app/components/products/TrackProductView";
 import { RecentlyViewed } from "@/app/components/products/RecentlyViewed";
+import { ProductGallery } from "@/app/components/products/ProductGallery";
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
 import { getSettings } from "@/lib/settings";
@@ -203,44 +203,8 @@ export default async function ProductPage({
         {/* Product Section */}
         <div className="container mx-auto px-4 pb-16">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
-            {/* Gallery */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-50">
-                {product.images?.[0] && (
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                )}
-                {discount > 0 && (
-                  <span className="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                    -{discount}%
-                  </span>
-                )}
-              </div>
-              {/* Thumbnails */}
-              <div className="grid grid-cols-4 gap-3">
-                {product.images?.slice(0, 4).map((img, i) => (
-                  <div
-                    key={i}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 cursor-pointer border-2 border-transparent hover:border-gold-400 transition"
-                  >
-                    <Image
-                      src={img}
-                      alt={`${product.name} ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="120px"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Gallery: hover zoom, thumbnails, swipe and full-screen lightbox */}
+            <ProductGallery images={product.images || []} name={product.name} discount={discount} />
 
             {/* Product Info */}
             <div className="lg:py-4">
