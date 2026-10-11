@@ -31,6 +31,7 @@ export const FEATURED_PRODUCTS = groq`
   *[_type == "product" && isFeatured == true][0..7] | order(_createdAt desc) {
     _id, name, "slug": slug.current, price, compareAtPrice,
     "image": images[0].asset->url,
+    sizes, stock,
     "category": category->name,
     rating, reviewCount, isBestseller, isNewArrival
   }
@@ -40,6 +41,7 @@ export const BESTSELLERS = groq`
   *[_type == "product" && isBestseller == true][0..7] | order(rating desc) {
     _id, name, "slug": slug.current, price, compareAtPrice,
     "image": images[0].asset->url,
+    sizes, stock,
     "images": images[0..1][].asset->url,
     "category": category->name,
     rating, reviewCount
@@ -50,6 +52,7 @@ export const NEW_ARRIVALS = groq`
   *[_type == "product" && isNewArrival == true][0..7] | order(_createdAt desc) {
     _id, name, "slug": slug.current, price, compareAtPrice,
     "image": images[0].asset->url,
+    sizes, stock,
     "images": images[0..1][].asset->url,
     "category": category->name,
     rating, reviewCount
@@ -71,6 +74,7 @@ export const RELATED_PRODUCTS = groq`
   *[_type == "product" && category._ref == $categoryId && _id != $productId][0..3] {
     _id, name, "slug": slug.current, price, compareAtPrice,
     "image": images[0].asset->url,
+    sizes, stock,
     "category": category->name,
     rating, reviewCount
   }

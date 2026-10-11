@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -18,6 +19,8 @@ export interface ProductCardProps {
     category: string;
     rating?: number;
     reviewCount?: number;
+    sizes?: string[] | null;
+    stock?: number | null;
   };
 }
 
@@ -27,6 +30,27 @@ export function ProductCard({ product }: ProductCardProps) {
     s.items.some((i) => i._id === product._id)
   );
   const addToCart = useCartStore((s) => s.addItem);
+  const openCart = useCartStore((s) => s.setOpen);
+  const [added, setAdded] = useState(false);
+
+  const soldOut = typeof product.stock === "number" && product.stock <= 0;
+  // Several sizes → the customer must pick one on the product page.
+  const needsSize = (product.sizes?.length ?? 0) > 1;
+
+  const quickAdd = () => {
+    addToCart({
+      _id: product._id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      image: product.image,
+      quantity: 1,
+      size: product.sizes?.[0] || undefined,
+    });
+    setAdded(true);
+    openCart(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
 
   const discount = product.compareAtPrice
     ? Math.round(
@@ -78,25 +102,34 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* Quick Add */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              addToCart({
-                _id: product._id,
-                name: product.name,
-                slug: product.slug,
-                price: product.price,
-                image: product.image,
-                quantity: 1,
-              });
-            }}
-            className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-sm text-secondary text-xs font-medium py-2.5 rounded-lg opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-secondary hover:text-white"
-          >
-            Quick Add
-          </button>
         </div>
       </Link>
+
+      {/* Quick Add — outside the link so it never navigates; always visible on touch screens */}
+      <div className="absolute inset-x-0 top-0 aspect-[3/4] px-3 pb-3 pointer-events-none flex items-end">
+        {soldOut ? (
+          <span className="pointer-events-auto w-full text-center bg-white/90 text-gray-400 text-xs font-medium py-2.5 rounded-lg">
+            Sold out
+          </span>
+        ) : needsSize ? (
+          <Link
+            href={`/products/${product.slug}`}
+            className="pointer-events-auto w-full text-center bg-white/90 backdrop-blur-sm text-secondary text-xs font-medium py-2.5 rounded-lg transition-all duration-300 md:opacity-0 md:translate-y-2 md:group-hover:opacity-100 md:group-hover:translate-y-0 hover:bg-secondary hover:text-white"
+          >
+            Choose size
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={quickAdd}
+            className={`pointer-events-auto w-full text-xs font-medium py-2.5 rounded-lg transition-all duration-300 md:opacity-0 md:translate-y-2 md:group-hover:opacity-100 md:group-hover:translate-y-0 ${
+              added ? "bg-green-600 text-white md:opacity-100 md:translate-y-0" : "bg-white/90 backdrop-blur-sm text-secondary hover:bg-secondary hover:text-white"
+            }`}
+          >
+            {added ? "Added ✓" : "Quick Add"}
+          </button>
+        )}
+      </div>
 
       {/* Wishlist */}
       <button
