@@ -2,10 +2,9 @@ import { NextRequest } from "next/server";
 import { adminHandler } from "@/lib/admin-route";
 import { latestReport } from "@/lib/agent/advisor";
 import { CatalogError } from "@/lib/catalog-admin";
+import { callGemini } from "@/lib/gemini";
 
 export const maxDuration = 60;
-
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
 const INSTRUCTIONS = `You are the AI Advisor for ModestStyle.pk, a Pakistani online store for hijabs, abayas and modest wear.
 You talk to the store owner. Base every answer on the store report provided (sales, orders, stock, competitor prices from KEF, Hijabeaze, The Women Zone and Scarfs.pk, website health, marketing).
@@ -40,21 +39,17 @@ export async function POST(request: NextRequest) {
       : "No report yet — tell the owner to press 'Run review'.";
 
     const turns = (Array.isArray(history) ? history : []).slice(-8);
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
+    const res = await callGemini(
+      key,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: `${INSTRUCTIONS}\n\nSTORE REPORT (JSON):\n${context}` }] },
-          contents: [
-            ...turns.map((t) => ({ role: t.role === "user" ? "user" : "model", parts: [{ text: String(t.text).slice(0, 2000) }] })),
-            { role: "user", parts: [{ text: q }] },
-          ],
-          generationConfig: { maxOutputTokens: 800, temperature: 0.4 },
-        }),
-        signal: AbortSignal.timeout(45000),
-      }
+        system_instruction: { parts: [{ text: `${INSTRUCTIONS}\n\nSTORE REPORT (JSON):\n${context}` }] },
+        contents: [
+          ...turns.map((t) => ({ role: t.role === "user" ? "user" : "model", parts: [{ text: String(t.text).slice(0, 2000) }] })),
+          { role: "user", parts: [{ text: q }] },
+        ],
+        generationConfig: { maxOutputTokens: 3000, temperature: 0.4 },
+      },
+      50000
     );
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {

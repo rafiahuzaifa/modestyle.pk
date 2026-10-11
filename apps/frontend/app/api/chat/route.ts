@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSettings } from "@/lib/settings";
 import { availablePaymentMethods } from "@/lib/payments";
 import { client } from "@/sanity/lib/client";
+import { callGemini } from "@/lib/gemini";
 import { formatPkr, formatWhatsApp, type StoreSettings } from "@/lib/settings-shared";
 
 /** The copy below is written with placeholder contact/shipping values; swap in the live
  * Admin → Settings values so the assistant never quotes stale numbers. */
-// Google retires Gemini models for new keys over time; override with GEMINI_MODEL if needed.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-
 function withSettings(text: string, s: StoreSettings) {
   return text
     .replaceAll("+92 300 1234567", formatWhatsApp(s.whatsappNumber))
@@ -172,21 +170,14 @@ export async function POST(req: NextRequest) {
         ...history,
         { role: "user", parts: [{ text: lastUserMsg }] },
       ],
-      generationConfig: { temperature: 0.4, maxOutputTokens: 400, topP: 0.8 },
+      generationConfig: { temperature: 0.4, maxOutputTokens: 2048, topP: 0.8 },
       safetySettings: [
         { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
         { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
       ],
     };
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }
-    );
+    const res = await callGemini(geminiKey, body);
 
     if (!res.ok) {
       return NextResponse.json({ reply: fallback() });
