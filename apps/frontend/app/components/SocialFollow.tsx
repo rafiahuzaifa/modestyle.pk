@@ -6,7 +6,9 @@ import { useSettings } from "@/app/components/SettingsProvider";
 export function handleFromUrl(url: string) {
   try {
     const part = new URL(url).pathname.split("/").filter(Boolean)[0] || "";
-    return part ? `@${part.replace(/^@/, "")}` : "";
+    // Facebook pages without a username use /profile.php?id=… — no handle to show.
+    if (!part || part.endsWith(".php")) return "";
+    return `@${part.replace(/^@/, "")}`;
   } catch {
     return "";
   }
