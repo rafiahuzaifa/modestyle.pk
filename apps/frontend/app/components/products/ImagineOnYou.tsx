@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   productImage: string;
@@ -425,9 +426,10 @@ function CameraModal({
     onCapture(c.toDataURL("image/jpeg", 0.92));
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black flex flex-col" role="dialog" aria-modal="true" aria-label="Camera">
-      <video ref={videoRef} autoPlay playsInline muted className="flex-1 w-full object-cover -scale-x-100" />
+  // Portal to <body>: a transformed ancestor would otherwise break position:fixed.
+  return createPortal(
+    <div className="fixed inset-0 z-[300] bg-black flex flex-col" role="dialog" aria-modal="true" aria-label="Camera">
+      <video ref={videoRef} autoPlay playsInline muted className="flex-1 min-h-0 w-full object-cover -scale-x-100" />
       <div className="flex items-center justify-around py-5 bg-black">
         <button onClick={onClose} className="text-white/80 text-sm px-4 py-2">
           Cancel
@@ -435,6 +437,7 @@ function CameraModal({
         <button onClick={capture} aria-label="Take photo" className="w-16 h-16 rounded-full bg-white border-4 border-gold-400" />
         <span className="w-[72px]" />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { createPortal } from "react-dom";
 
 const HOVER_ZOOM = 2.5;
 const LIGHTBOX_ZOOM = 2.5;
@@ -167,8 +168,9 @@ function Lightbox({
     return { x: ((clientX - r.left) / r.width) * 100, y: ((clientY - r.top) / r.height) * 100 };
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col" role="dialog" aria-modal="true" aria-label={`${name} images`}>
+  // Portal to <body>: a transformed ancestor would otherwise break position:fixed.
+  return createPortal(
+    <div className="fixed inset-0 z-[300] bg-black/95 flex flex-col" role="dialog" aria-modal="true" aria-label={`${name} images`}>
       <div className="flex items-center justify-between px-4 py-3 text-white/80 text-sm">
         <span>
           {index + 1} / {count}
@@ -180,7 +182,7 @@ function Lightbox({
       </div>
 
       <div
-        className={`relative flex-1 overflow-hidden ${zoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`}
+        className={`relative flex-1 min-h-0 overflow-hidden ${zoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`}
         onClick={(e) => {
           setOrigin(point(e.clientX, e.clientY, e.currentTarget));
           setZoomed((z) => !z);
@@ -229,6 +231,7 @@ function Lightbox({
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
