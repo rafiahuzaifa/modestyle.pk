@@ -11,17 +11,23 @@ interface SearchParams {
   pending?: string;
 }
 
-type State = "cod" | "paid" | "pending" | "failed" | "unknown";
+type State = "cod" | "transfer" | "paid" | "pending" | "failed" | "unknown";
 
 function stateFor(order: OrderSummary | null, pendingHint: boolean): State {
   if (!order) return "unknown";
   if (order.payment_method === "cod") return "cod";
+  if (order.payment_method === "transfer" && order.payment_status !== "paid") return "transfer";
   if (order.payment_status === "paid") return "paid";
   if (order.payment_status === "failed") return "failed";
   return pendingHint || order.payment_status === "pending" ? "pending" : "unknown";
 }
 
 const COPY: Record<State, { title: string; body: string; tone: "green" | "amber" | "red" }> = {
+  transfer: {
+    title: "Order Placed — Payment Pending",
+    body: "Please send the amount below to one of our accounts. Your order is confirmed and dispatched as soon as we receive the payment.",
+    tone: "amber",
+  },
   cod: {
     title: "Order Placed!",
     body: "Thank you! Our team will call you shortly to confirm your order. Please pay in cash when it's delivered.",
@@ -95,10 +101,39 @@ export default async function CheckoutSuccessPage({
             </div>
             {order && (
               <div className="flex justify-between">
-                <span className="text-gray-500">{state === "cod" ? "Amount to pay on delivery" : "Order total"}</span>
+                <span className="text-gray-500">
+                  {state === "cod" ? "Amount to pay on delivery" : state === "transfer" ? "Amount to send" : "Order total"}
+                </span>
                 <span className="font-medium">PKR {Math.round(order.total).toLocaleString()}</span>
               </div>
             )}
+          </div>
+        )}
+
+        {state === "transfer" && (
+          <div className="bg-white border border-amber-200 rounded-xl text-sm text-left mb-6 divide-y divide-gray-50">
+            {(
+              [
+                ["Account title", settings.transferAccountTitle],
+                ["Bank", settings.transferBankName],
+                ["IBAN", settings.transferIban],
+                ["Account number", settings.transferAccountNumber],
+                ["Raast ID", settings.transferRaastId],
+                ["JazzCash", settings.transferJazzcash],
+                ["EasyPaisa", settings.transferEasypaisa],
+              ] as [string, string][]
+            )
+              .filter(([, v]) => v)
+              .map(([label, value]) => (
+                <div key={label} className="flex justify-between gap-3 px-4 py-2.5">
+                  <span className="text-gray-400 text-xs">{label}</span>
+                  <span className="font-medium text-secondary break-all text-right">{value}</span>
+                </div>
+              ))}
+            <p className="px-4 py-2.5 text-xs text-gray-500">
+              After paying, send the screenshot on WhatsApp with order number <b>#{ref}</b>.
+              {settings.transferNote ? ` ${settings.transferNote}` : ""}
+            </p>
           </div>
         )}
 
@@ -116,12 +151,19 @@ export default async function CheckoutSuccessPage({
             {state === "failed" ? "Shop Again" : "Continue Shopping"}
           </Link>
           <a
-            href={whatsappHref(settings.whatsappNumber, ref ? `Assalam o Alaikum! My order number is #${ref}.` : undefined)}
+            href={whatsappHref(
+              settings.whatsappNumber,
+              ref
+                ? state === "transfer"
+                  ? `Assalam o Alaikum! I have sent PKR ${Math.round(order?.total || 0).toLocaleString()} for order #${ref}. Screenshot attached.`
+                  : `Assalam o Alaikum! My order number is #${ref}.`
+                : undefined
+            )}
             target="_blank"
             rel="noopener noreferrer"
             className="border border-gray-200 px-6 py-3 rounded-lg text-sm font-medium hover:border-gold-400 transition"
           >
-            WhatsApp Us
+            {state === "transfer" ? "Send payment screenshot" : "WhatsApp Us"}
           </a>
         </div>
 

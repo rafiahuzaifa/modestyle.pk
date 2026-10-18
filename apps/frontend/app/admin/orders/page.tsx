@@ -56,6 +56,7 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cod: "COD",
+  transfer: "Bank/Wallet",
   safepay: "Card",
   jazzcash: "JazzCash",
   easypaisa: "EasyPaisa",
@@ -83,6 +84,22 @@ export default function AdminOrdersPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders();
   }, []);
+
+  const markPaymentReceived = async (orderId: string) => {
+    if (!confirm("Confirm you have received this payment in your bank / wallet?")) return;
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment: "received" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Update failed");
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: data.status, payment_status: data.payment_status } : o)));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not update the payment.");
+    }
+  };
 
   const updateStatus = async (orderId: string, status: string) => {
     try {
@@ -196,7 +213,7 @@ export default function AdminOrdersPage() {
                       </select>
                     </td>
                   </tr>
-                  {expanded === order.id && <OrderDetails order={order} />}
+                  {expanded === order.id && <OrderDetails order={order} onMarkPaid={() => markPaymentReceived(order.id)} />}
                   </Fragment>
                 ))
               )}
@@ -223,6 +240,8 @@ function confirmationMessage(order: Order) {
   const payLine =
     order.payment_method === "cod"
       ? `Total to pay on delivery: PKR ${order.total.toLocaleString()}`
+      : order.payment_method === "transfer" && order.payment_status !== "paid"
+      ? `Amount to send (bank / wallet transfer): PKR ${order.total.toLocaleString()}`
       : `Order total: PKR ${order.total.toLocaleString()}`;
   return [
     `Assalam o Alaikum ${order.customer_name.split(" ")[0]}! 🤍`,
@@ -237,7 +256,7 @@ function confirmationMessage(order: Order) {
   ].join("\n");
 }
 
-function OrderDetails({ order }: { order: Order }) {
+function OrderDetails({ order, onMarkPaid }: { order: Order; onMarkPaid: () => void }) {
   const addr = order.shipping_address || {};
   const codFee = order.total - order.subtotal - order.shipping + order.discount;
   return (
@@ -274,8 +293,27 @@ function OrderDetails({ order }: { order: Order }) {
                 Send confirmation on WhatsApp
               </a>
             )}
-            {order.status === "pending" && (
-              <p className="text-[11px] text-gray-400 mt-1">When the customer replies YES, set the status to Confirmed.</p>
+            {order.payment_method === "transfer" && order.payment_status !== "paid" ? (
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
+                <p className="text-xs text-amber-800">
+                  Advance payment by bank / wallet — check your account for PKR {order.total.toLocaleString()}.
+                  {order.transaction_id && (
+                    <>
+                      {" "}Customer&apos;s reference: <b className="font-mono">{order.transaction_id}</b>
+                    </>
+                  )}
+                </p>
+                <button
+                  onClick={onMarkPaid}
+                  className="bg-secondary text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-secondary/90"
+                >
+                  Mark payment received
+                </button>
+              </div>
+            ) : (
+              order.status === "pending" && (
+                <p className="text-[11px] text-gray-400 mt-1">When the customer replies YES, set the status to Confirmed.</p>
+              )
             )}
           </div>
           <div className="space-y-1">

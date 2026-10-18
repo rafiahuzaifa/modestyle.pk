@@ -96,7 +96,7 @@ export interface CreateOrderParams {
   shippingAddress?: Record<string, unknown>;
   shipping: number;
   promoCode?: string;
-  paymentMethod: "cod" | "safepay" | "jazzcash" | "easypaisa";
+  paymentMethod: "cod" | "transfer" | "safepay" | "jazzcash" | "easypaisa";
   paymentStatus: "unpaid" | "pending" | "paid" | "failed";
   status?: string;
   /** Client-side checkout session id, used to close the abandoned-cart record. */

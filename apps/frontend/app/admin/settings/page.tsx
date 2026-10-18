@@ -8,7 +8,21 @@ const INPUT_CLASS =
 const LABEL_CLASS = "block text-xs font-medium text-gray-500 mb-1.5";
 
 type NumberKey = "freeShippingThreshold" | "standardShipping" | "expressShipping" | "codFee";
-type TextKey = "announcement" | "whatsappNumber" | "supportEmail" | "instagram" | "facebook" | "tiktok" | "popupPromoCode" | "cartRecoveryCode";
+type TextKey =
+  | "announcement" | "whatsappNumber" | "supportEmail" | "instagram" | "facebook" | "tiktok"
+  | "popupPromoCode" | "cartRecoveryCode"
+  | "transferAccountTitle" | "transferBankName" | "transferIban" | "transferAccountNumber"
+  | "transferRaastId" | "transferJazzcash" | "transferEasypaisa" | "transferNote";
+
+const TRANSFER_FIELDS: { key: TextKey; label: string; placeholder: string }[] = [
+  { key: "transferAccountTitle", label: "Account title", placeholder: "e.g. ModestStyle PK" },
+  { key: "transferBankName", label: "Bank name", placeholder: "e.g. Meezan Bank" },
+  { key: "transferIban", label: "IBAN", placeholder: "PK00XXXX0000000000000000" },
+  { key: "transferAccountNumber", label: "Account number", placeholder: "Optional if IBAN is given" },
+  { key: "transferRaastId", label: "Raast ID", placeholder: "Usually your mobile number" },
+  { key: "transferJazzcash", label: "JazzCash number", placeholder: "03xx xxxxxxx" },
+  { key: "transferEasypaisa", label: "EasyPaisa number", placeholder: "03xx xxxxxxx" },
+];
 
 export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<StoreSettings | null>(null);
@@ -185,6 +199,42 @@ export default function AdminSettingsPage() {
             <CodeSelect value={settings.cartRecoveryCode} codes={activeCodes} onChange={(v) => setText("cartRecoveryCode", v)} />
           </Field>
         </div>
+      </Section>
+
+      <Section
+        title="Bank / wallet transfer (advance payment)"
+        hint="Customers send money to these accounts and you mark the order as paid in Orders. No gateway fees. Fill only the accounts you use."
+      >
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={settings.transferEnabled}
+            onChange={(e) => setSettings({ ...settings, transferEnabled: e.target.checked })}
+            className="accent-gold-500"
+          />
+          Offer bank / wallet transfer at checkout
+        </label>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {TRANSFER_FIELDS.map((f) => (
+            <Field key={f.key} label={f.label}>
+              <input
+                className={INPUT_CLASS}
+                value={settings[f.key] as string}
+                placeholder={f.placeholder}
+                onChange={(e) => setText(f.key, e.target.value)}
+              />
+            </Field>
+          ))}
+        </div>
+        <Field label="Extra instructions for customers (optional)">
+          <textarea
+            className={`${INPUT_CLASS} resize-y`}
+            rows={2}
+            value={settings.transferNote}
+            placeholder="e.g. Please send the payment screenshot on WhatsApp with your order number."
+            onChange={(e) => setText("transferNote", e.target.value)}
+          />
+        </Field>
       </Section>
 
       <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white border-t border-gray-200 px-6 py-3 flex items-center gap-4 z-10">

@@ -2,7 +2,7 @@
 
 import { useSettings } from "@/app/components/SettingsProvider";
 
-export type PaymentMethod = "card" | "jazzcash" | "easypaisa" | "cod";
+export type PaymentMethod = "card" | "jazzcash" | "easypaisa" | "transfer" | "cod";
 
 interface PaymentOption {
   id: PaymentMethod;
@@ -32,6 +32,13 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
     name: "EasyPaisa",
     description: "Pay with your EasyPaisa mobile wallet",
     icon: "📲",
+    available: true,
+  },
+  {
+    id: "transfer",
+    name: "Bank / JazzCash / EasyPaisa transfer",
+    description: "Pay in advance by bank, Raast or mobile wallet — no COD fee",
+    icon: "🏦",
     available: true,
   },
   {

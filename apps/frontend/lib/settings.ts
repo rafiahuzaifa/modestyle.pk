@@ -23,6 +23,7 @@ interface SettingsDoc {
   popupPromoCode?: string;
   cartRecoveryCode?: string;
   promoCodes?: Partial<PromoCode>[];
+  transfer?: Partial<Record<string, string | boolean>>;
   socialLinks?: { instagram?: string; facebook?: string; tiktok?: string; whatsapp?: string };
 }
 
@@ -59,6 +60,15 @@ function merge(doc: SettingsDoc | null): StoreSettings {
             active: p.active !== false,
           }))
       : d.promoCodes,
+    transferEnabled: doc.transfer?.enabled === true,
+    transferAccountTitle: typeof doc.transfer?.accountTitle === "string" ? String(doc.transfer.accountTitle) : d.transferAccountTitle,
+    transferBankName: typeof doc.transfer?.bankName === "string" ? String(doc.transfer.bankName) : d.transferBankName,
+    transferIban: typeof doc.transfer?.iban === "string" ? String(doc.transfer.iban) : d.transferIban,
+    transferAccountNumber: typeof doc.transfer?.accountNumber === "string" ? String(doc.transfer.accountNumber) : d.transferAccountNumber,
+    transferRaastId: typeof doc.transfer?.raastId === "string" ? String(doc.transfer.raastId) : d.transferRaastId,
+    transferJazzcash: typeof doc.transfer?.jazzcash === "string" ? String(doc.transfer.jazzcash) : d.transferJazzcash,
+    transferEasypaisa: typeof doc.transfer?.easypaisa === "string" ? String(doc.transfer.easypaisa) : d.transferEasypaisa,
+    transferNote: typeof doc.transfer?.note === "string" ? String(doc.transfer.note) : d.transferNote,
   };
 }
 
@@ -101,6 +111,17 @@ export async function saveSettings(s: StoreSettings) {
       popupPromoCode: s.popupPromoCode,
       cartRecoveryCode: s.cartRecoveryCode,
       promoCodes: s.promoCodes.map((p, i) => ({ _key: `promo${i}`, ...p })),
+      transfer: {
+        enabled: s.transferEnabled,
+        accountTitle: s.transferAccountTitle,
+        bankName: s.transferBankName,
+        iban: s.transferIban,
+        accountNumber: s.transferAccountNumber,
+        raastId: s.transferRaastId,
+        jazzcash: s.transferJazzcash,
+        easypaisa: s.transferEasypaisa,
+        note: s.transferNote,
+      },
       socialLinks: { instagram: s.instagram, facebook: s.facebook, tiktok: s.tiktok, whatsapp: s.whatsappNumber },
     })
     .commit();
@@ -150,5 +171,14 @@ export function parseSettingsInput(body: Record<string, unknown>): StoreSettings
     popupPromoCode: s("popupPromoCode", 30).toUpperCase(),
     cartRecoveryCode: s("cartRecoveryCode", 30).toUpperCase(),
     promoCodes,
+    transferEnabled: body.transferEnabled === true,
+    transferAccountTitle: s("transferAccountTitle", 100),
+    transferBankName: s("transferBankName", 100),
+    transferIban: s("transferIban", 40).toUpperCase().replace(/\s+/g, ""),
+    transferAccountNumber: s("transferAccountNumber", 40),
+    transferRaastId: s("transferRaastId", 60),
+    transferJazzcash: s("transferJazzcash", 20),
+    transferEasypaisa: s("transferEasypaisa", 20),
+    transferNote: s("transferNote", 400),
   };
 }

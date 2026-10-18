@@ -24,6 +24,7 @@ function adminRecipients(): string[] {
 
 const PAYMENT_LABELS: Record<string, string> = {
   cod: "Cash on Delivery",
+  transfer: "Bank / wallet transfer",
   safepay: "Card (Safepay)",
   jazzcash: "JazzCash",
   easypaisa: "EasyPaisa",

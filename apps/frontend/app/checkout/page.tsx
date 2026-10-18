@@ -51,8 +51,10 @@ export default function CheckoutPage() {
     card: false,
     jazzcash: false,
     easypaisa: false,
+    transfer: false,
     cod: true,
   });
+  const [transferRef, setTransferRef] = useState("");
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(true);
@@ -262,6 +264,28 @@ export default function CheckoutPage() {
   };
 
   // ── Cash on Delivery ────────────────────────────────────────────
+  // ── Bank / wallet transfer (advance payment, confirmed by admin) ──
+  const handleTransfer = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/payment/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildOrderPayload("transfer", { transfer_reference: transferRef })),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Order creation failed");
+      setRedirecting(true);
+      clearCart();
+      window.location.href = `/checkout/success?order_id=${data.order_id}`;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Order failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCOD = async () => {
     setLoading(true);
     setError("");
@@ -607,6 +631,38 @@ export default function CheckoutPage() {
                   />
                 )}
 
+                {/* Bank / wallet transfer */}
+                {paymentMethod === "transfer" && (
+                  <div className="space-y-4 border border-gray-100 rounded-xl p-5 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🏦</span>
+                      <h3 className="text-sm font-medium">Pay by bank, Raast or mobile wallet</h3>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Send <b className="text-secondary">PKR {total.toLocaleString()}</b> to any account below, then place your order.
+                      We&apos;ll confirm and dispatch as soon as the payment arrives.
+                    </p>
+                    <TransferDetails />
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Transaction ID / reference (optional — you can also send the screenshot on WhatsApp)</label>
+                      <input
+                        value={transferRef}
+                        onChange={(e) => setTransferRef(e.target.value)}
+                        maxLength={80}
+                        placeholder="e.g. TID 1234567890"
+                        className={INPUT_CLASS}
+                      />
+                    </div>
+                    <button
+                      onClick={handleTransfer}
+                      disabled={loading}
+                      className="w-full bg-gold-500 text-white py-4 rounded-lg font-medium text-lg hover:bg-gold-600 transition disabled:opacity-50"
+                    >
+                      {loading ? "Placing order..." : `Place Order — PKR ${total.toLocaleString()}`}
+                    </button>
+                  </div>
+                )}
+
                 {/* Cash on Delivery */}
                 {paymentMethod === "cod" && (
                   <div className="space-y-4 border border-gray-100 rounded-xl p-5 bg-gray-50">
@@ -743,6 +799,47 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** The store's transfer accounts (from Admin → Settings) with copy buttons. */
+function TransferDetails() {
+  const s = useSettings();
+  const [copied, setCopied] = useState("");
+  const rows: [string, string][] = (
+    [
+      ["Account title", s.transferAccountTitle],
+      ["Bank", s.transferBankName],
+      ["IBAN", s.transferIban],
+      ["Account number", s.transferAccountNumber],
+      ["Raast ID", s.transferRaastId],
+      ["JazzCash", s.transferJazzcash],
+      ["EasyPaisa", s.transferEasypaisa],
+    ] as [string, string][]
+  ).filter(([, v]) => v);
+  const copy = (label: string, value: string) => {
+    navigator.clipboard?.writeText(value).then(() => {
+      setCopied(label);
+      setTimeout(() => setCopied(""), 1500);
+    });
+  };
+  return (
+    <div className="bg-white rounded-lg border border-gray-100 divide-y divide-gray-50">
+      {rows.map(([label, value]) => (
+        <div key={label} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
+          <span className="text-gray-400 text-xs">{label}</span>
+          <span className="flex items-center gap-2 min-w-0">
+            <span className="font-medium text-secondary truncate">{value}</span>
+            {label !== "Bank" && label !== "Account title" && (
+              <button type="button" onClick={() => copy(label, value)} className="text-[11px] text-gold-600 hover:underline flex-shrink-0">
+                {copied === label ? "Copied ✓" : "Copy"}
+              </button>
+            )}
+          </span>
+        </div>
+      ))}
+      {s.transferNote && <p className="px-4 py-2.5 text-xs text-gray-500 whitespace-pre-line">{s.transferNote}</p>}
     </div>
   );
 }

@@ -81,6 +81,22 @@ export const siteSettings = defineType({
       initialValue: "WELCOME10",
     }),
     defineField({
+      name: "transfer",
+      title: "Bank / Wallet Transfer",
+      type: "object",
+      fields: [
+        { name: "enabled", type: "boolean", title: "Offer at checkout" },
+        { name: "accountTitle", type: "string", title: "Account title" },
+        { name: "bankName", type: "string", title: "Bank name" },
+        { name: "iban", type: "string", title: "IBAN" },
+        { name: "accountNumber", type: "string", title: "Account number" },
+        { name: "raastId", type: "string", title: "Raast ID" },
+        { name: "jazzcash", type: "string", title: "JazzCash number" },
+        { name: "easypaisa", type: "string", title: "EasyPaisa number" },
+        { name: "note", type: "text", title: "Extra instructions" },
+      ],
+    }),
+    defineField({
       name: "socialLinks",
       title: "Social Links",
       type: "object",

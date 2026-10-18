@@ -13,11 +13,28 @@ export async function PATCH(
   }
   try {
     const { id } = await params;
-    const { status } = await request.json();
+    const body = await request.json();
+    const sql = getDb();
+
+    // Admin confirms an advance (bank / wallet) transfer has arrived.
+    if (body.payment === "received") {
+      const [paid] = await sql`
+        UPDATE orders SET
+          payment_status = 'paid',
+          status = CASE WHEN status = 'pending' THEN 'confirmed' ELSE status END,
+          confirmed_at = CASE WHEN status = 'pending' THEN NOW() ELSE confirmed_at END,
+          updated_at = NOW()
+        WHERE id = ${id} AND payment_method = 'transfer'
+        RETURNING status, payment_status
+      `;
+      if (!paid) return NextResponse.json({ error: "Only bank/wallet transfer orders can be marked as paid here" }, { status: 400 });
+      return NextResponse.json({ success: true, ...paid });
+    }
+
+    const { status } = body;
     if (!ORDER_STATUSES.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
-    const sql = getDb();
     // A delivered COD order means the rider collected the cash.
     const [order] = await sql`
       UPDATE orders SET

@@ -21,6 +21,16 @@ export interface StoreSettings {
   popupPromoCode: string;
   cartRecoveryCode: string;
   promoCodes: PromoCode[];
+  /** Advance payment by bank transfer / Raast / mobile wallet (verified manually by the admin). */
+  transferEnabled: boolean;
+  transferAccountTitle: string;
+  transferBankName: string;
+  transferIban: string;
+  transferAccountNumber: string;
+  transferRaastId: string;
+  transferJazzcash: string;
+  transferEasypaisa: string;
+  transferNote: string;
 }
 
 /** Settings minus anything customers shouldn't see (the promo code list). */
@@ -46,7 +56,21 @@ export const DEFAULT_SETTINGS: StoreSettings = {
     { code: "MODEST10", percent: 10, active: true },
     { code: "WELCOME10", percent: 10, active: true },
   ],
+  transferEnabled: false,
+  transferAccountTitle: "",
+  transferBankName: "",
+  transferIban: "",
+  transferAccountNumber: "",
+  transferRaastId: "",
+  transferJazzcash: "",
+  transferEasypaisa: "",
+  transferNote: "",
 };
+
+/** Bank transfer is offered only when switched on and at least one account is filled in. */
+export function transferAvailable(s: Pick<StoreSettings, "transferEnabled" | "transferIban" | "transferAccountNumber" | "transferRaastId" | "transferJazzcash" | "transferEasypaisa">) {
+  return s.transferEnabled && !!(s.transferIban || s.transferAccountNumber || s.transferRaastId || s.transferJazzcash || s.transferEasypaisa);
+}
 
 export function toPublicSettings(s: StoreSettings): PublicSettings {
   const rest: Partial<StoreSettings> = { ...s };
