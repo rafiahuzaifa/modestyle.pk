@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
@@ -25,8 +25,15 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#1A1A1A",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: "ModestStyle PK",
+  // iPhone/iPad "Add to Home Screen": open full-screen with the store's name.
+  appleWebApp: { capable: true, title: "ModestStyle", statusBarStyle: "default" },
   title: {
     default: "ModestStyle PK — Premium Hijabs & Modest Fashion in Pakistan",
     template: "%s | ModestStyle PK",
